@@ -1,6 +1,7 @@
 import 'adjustment.dart';
 import 'category.dart';
 import 'donors.dart';
+import 'hold.dart';
 import 'money.dart';
 import 'policy.dart';
 
@@ -30,9 +31,12 @@ abstract final class DailyAllowanceCalculator {
   static Money poolAtStartOfDay({
     required Map<BudgetCategory, Money> balancesNow,
     required Map<BudgetCategory, Money> spentTodayByCategory,
+    Map<BudgetCategory, Money> held = const {},
   }) =>
       Money.sum(BudgetCategory.spendablePool.map((category) =>
-          (balancesNow[category] ?? Money.zero) + (spentTodayByCategory[category] ?? Money.zero)));
+          (balancesNow[category] ?? Money.zero) +
+          (spentTodayByCategory[category] ?? Money.zero) -
+          (held[category] ?? Money.zero)));
 
   static Money baseDaily({required Money poolAtCycleStart, required int cycleLength}) =>
       poolAtCycleStart.positivePart.floorDiv(cycleLength);
@@ -73,6 +77,7 @@ abstract final class BankedMover {
     required Map<BudgetCategory, Money> balances,
     required Money foodFloorPerDay,
     required int daysLeft,
+    Map<BudgetCategory, Money> held = const {},
   }) {
     if (to != BudgetCategory.buffer && to != BudgetCategory.goals) {
       throw ArgumentError.value(to, 'to', 'banked money moves to Buffer or Goals');
@@ -80,7 +85,7 @@ abstract final class BankedMover {
     if (!amount.isPositive || amount > banked) {
       throw ArgumentError.value(amount, 'amount', 'must be positive and at most $banked');
     }
-    final working = Map<BudgetCategory, Money>.of(balances);
+    final working = Holds.spendable(balances, held);
     final drawdown = Donors.draw(
       balances: working,
       needed: amount,

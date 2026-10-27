@@ -85,11 +85,11 @@ void main() {
     expect(plan.total, Money.rupees(8500));
   });
 
-  test('a deposit that cannot cover the floors shows the shortfall instead of hiding it', () {
+  test('a deposit that cannot cover the floors cuts Petrol before Night food stock and shows the shortfall', () {
     final plan = planFor(5000);
     expect(plan.allocations[BudgetCategory.food], plan.foodFloor);
-    expect(plan.allocations[BudgetCategory.petrol], Money.rupees(350));
-    expect(plan.allocations[BudgetCategory.nightFoodStock], Money.zero);
+    expect(plan.allocations[BudgetCategory.petrol], Money.zero);
+    expect(plan.allocations[BudgetCategory.nightFoodStock], Money.rupees(350));
     expect(plan.allocations[BudgetCategory.misc], Money.zero);
     expect(plan.shortfall, Money.rupees(1640));
     expect(plan.total, Money.rupees(5000));

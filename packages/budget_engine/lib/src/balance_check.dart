@@ -2,6 +2,7 @@ import 'adjustment.dart';
 import 'category.dart';
 import 'deposit.dart';
 import 'donors.dart';
+import 'hold.dart';
 import 'largest_remainder.dart';
 import 'money.dart';
 import 'transaction.dart';
@@ -88,6 +89,7 @@ abstract final class BalanceCheck {
     required Money petrolFloorRemaining,
     required int daysLeft,
     Money essentialsReservedForDue = Money.zero,
+    Map<BudgetCategory, Money> held = const {},
   }) {
     final difference = comparison.difference;
     final at = comparison.reported.at;
@@ -142,7 +144,7 @@ abstract final class BalanceCheck {
     }
 
     final shortfall = -difference;
-    final working = Map<BudgetCategory, Money>.of(balances);
+    final working = Holds.spendable(balances, held);
     final drawdown = Donors.draw(
       balances: working,
       needed: shortfall,

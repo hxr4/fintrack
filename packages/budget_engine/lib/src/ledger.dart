@@ -41,6 +41,11 @@ abstract final class Ledger {
 
   static Money total(Map<BudgetCategory, Money> balances) => Money.sum(balances.values);
 
-  static Money pool(Map<BudgetCategory, Money> balances) =>
-      Money.sum(BudgetCategory.spendablePool.map((category) => balances[category] ?? Money.zero));
+  static Money pool(
+    Map<BudgetCategory, Money> balances, {
+    Map<BudgetCategory, Money> held = const {},
+  }) =>
+      Money.sum(BudgetCategory.spendablePool.map(
+        (category) => (balances[category] ?? Money.zero) - (held[category] ?? Money.zero),
+      ));
 }

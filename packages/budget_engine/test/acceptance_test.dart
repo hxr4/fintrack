@@ -12,6 +12,7 @@ final class SimulatedCycle {
     required this.opening,
     required this.transactions,
     required this.adjustments,
+    required this.holds,
     required this.closing,
     required this.awaitingDays,
   });
@@ -21,6 +22,7 @@ final class SimulatedCycle {
   final Map<BudgetCategory, Money> opening;
   final List<Transaction> transactions;
   final List<Adjustment> adjustments;
+  final List<Hold> holds;
   final Map<BudgetCategory, Money> closing;
   final int awaitingDays;
 }
@@ -76,6 +78,7 @@ List<SimulatedCycle> simulate(int seed) {
 
     final transactions = <Transaction>[];
     final adjustments = <Adjustment>[];
+    final holds = <Hold>[];
     var awaitingDays = 0;
     for (var day = start; day < actualNextStart; day = day.addDays(1)) {
       final awaiting = CycleCalendar.isAwaitingDeposit(planned, day);
@@ -85,6 +88,24 @@ List<SimulatedCycle> simulate(int seed) {
       final daysLeft = awaiting
           ? CycleCalendar.awaitingPlanDays(expectedStart: planned.nextStart, today: day, policy: policy)
           : planned.daysLeftIncluding(day);
+      final beforeRollover = Ledger.balances(
+        opening: opening,
+        allocations: plan.allocations,
+        transactions: transactions,
+        adjustments: adjustments,
+      );
+      final weekly = WeeklyHoldRelease.due(
+        holds: holds,
+        balances: beforeRollover,
+        today: day,
+        boundaryHour: settings.dayBoundaryHour,
+        foodFloorPerDay: settings.foodFloorPerDay,
+      );
+      if (weekly.isNotEmpty) {
+        final event = persistEvent(batchId: 'batch-${batch++}', at: KolkataTime.at(day, 4), releases: weekly);
+        adjustments.addAll(event.adjustments);
+        holds.addAll(event.holds);
+      }
       final startOfDay = Ledger.balances(
         opening: opening,
         allocations: plan.allocations,
@@ -92,7 +113,7 @@ List<SimulatedCycle> simulate(int seed) {
         adjustments: adjustments,
       );
       final allowance = DailyAllowanceCalculator.compute(
-        poolAtStartOfDay: Ledger.pool(startOfDay),
+        poolAtStartOfDay: Ledger.pool(startOfDay, held: Holds.heldByCategory(holds)),
         spentToday: Money.zero,
         daysLeft: daysLeft,
         baseDaily: plan.baseDaily,
@@ -115,9 +136,17 @@ List<SimulatedCycle> simulate(int seed) {
           petrolFloorForCycle: plan.petrolFloor,
           cycleLength: planned.length,
           daysLeft: daysLeft,
+          dayOfCycle: actualWindow.dayNumber(day),
+          holds: holds,
         );
         if (result.moved) {
-          adjustments.addAll(persist(result.moves, 'batch-${batch++}', at));
+          final event = persistResult(result, 'batch-${batch++}', at);
+          adjustments.addAll(event.adjustments);
+          holds.addAll(event.holds);
+        }
+        expect(Holds.heldByCategory(holds).values.every((amount) => !amount.isNegative), isTrue);
+        if (result.suggestReplan) {
+          expect(actualWindow.dayNumber(day), lessThan(10));
         }
         final after = Ledger.balances(
           opening: opening,
@@ -154,6 +183,7 @@ List<SimulatedCycle> simulate(int seed) {
       opening: opening,
       transactions: transactions,
       adjustments: adjustments,
+      holds: holds,
       closing: closing,
       awaitingDays: awaitingDays,
     ));
@@ -191,11 +221,17 @@ void main() {
 
   test('invariants hold across many simulated quarters', () {
     var refills = 0;
+    var holdsPlaced = 0;
+    var releases = 0;
     for (var seed = 0; seed < 60; seed++) {
       final cycles = simulate(seed);
       refills += cycles.fold(0, (sum, cycle) => sum + cycle.adjustments.length);
+      holdsPlaced += cycles.fold(0, (sum, cycle) => sum + cycle.holds.where((hold) => hold.amount.isPositive).length);
+      releases += cycles.fold(0, (sum, cycle) => sum + cycle.holds.where((hold) => hold.amount.isNegative).length);
     }
     expect(refills, greaterThan(0), reason: 'the simulation should exercise auto-adjust');
+    expect(holdsPlaced, greaterThan(0), reason: 'the simulation should place holds');
+    expect(releases, greaterThan(0), reason: 'the simulation should release holds');
   });
 
   test('results are deterministic for the same inputs', () {
@@ -211,11 +247,15 @@ void main() {
   test('undoing every auto-adjust batch restores the exact pre-adjust balances', () {
     final cycle = [
       for (var seed = 0; seed < 60; seed++) ...simulate(seed),
-    ].firstWhere((cycle) => cycle.adjustments.length > 1);
+    ].firstWhere((cycle) => cycle.holds.isNotEmpty && cycle.adjustments.length > 1);
     var adjustments = cycle.adjustments;
+    var holds = cycle.holds;
     for (final batchId in cycle.adjustments.map((adjustment) => adjustment.batchId).toSet()) {
-      adjustments = AdjustmentBatches.undo(adjustments, batchId);
+      final undone = BatchUndo.undo(adjustments: adjustments, holds: holds, batchId: batchId);
+      adjustments = undone.adjustments;
+      holds = undone.holds;
     }
+    expect(Holds.totalHeld(holds), Money.zero);
     expect(
       Ledger.balances(
         opening: cycle.opening,

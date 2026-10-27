@@ -213,8 +213,8 @@ abstract final class AllocationPlanner {
     }
     excess = deferSupplies(due: true);
     for (final category in [
-      BudgetCategory.nightFoodStock,
       BudgetCategory.petrol,
+      BudgetCategory.nightFoodStock,
       BudgetCategory.food,
     ]) {
       excess = takeFrom(category, Money.zero);

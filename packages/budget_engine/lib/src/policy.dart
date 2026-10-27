@@ -38,6 +38,8 @@ final class BudgetPolicy {
     this.softCapDenominator = 2,
     this.runwayWindowDays = 7,
     this.bufferCarryCycles = 2,
+    this.foodRefillDays = 7,
+    this.replanPromptBeforeDay = 10,
     this.scenarios = const [
       ScenarioRule(pace: ScenarioPace.fast, flexiblePercent: 75, bufferPercent: 50, usesBanked: true),
       ScenarioRule(pace: ScenarioPace.balanced, flexiblePercent: 50, bufferPercent: 0, usesBanked: true),
@@ -59,5 +61,7 @@ final class BudgetPolicy {
   final int softCapDenominator;
   final int runwayWindowDays;
   final int bufferCarryCycles;
+  final int foodRefillDays;
+  final int replanPromptBeforeDay;
   final List<ScenarioRule> scenarios;
 }

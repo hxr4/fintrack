@@ -79,6 +79,16 @@ void main() {
     expect(allowance.allowance, Money.rupees(300));
   });
 
+  test('held money is not part of the spendable pool', () {
+    expect(
+      Ledger.pool(
+        {BudgetCategory.food: Money.rupees(500), BudgetCategory.outings: Money.rupees(300)},
+        held: {BudgetCategory.outings: Money.rupees(200)},
+      ),
+      Money.rupees(600),
+    );
+  });
+
   test('pool at start of day adds back today\'s pool spending', () {
     expect(
       DailyAllowanceCalculator.poolAtStartOfDay(
@@ -117,6 +127,22 @@ void main() {
       ]);
       final after = Ledger.applyDrafts(balances, moves);
       expect(after[BudgetCategory.food]! >= Money.rupees(1500), isTrue);
+    });
+
+    test('held money is skipped when moving banked money', () {
+      final moves = BankedMover.move(
+        amount: Money.rupees(300),
+        to: BudgetCategory.goals,
+        banked: Money.rupees(4000),
+        balances: balances,
+        foodFloorPerDay: Money.rupees(150),
+        daysLeft: 10,
+        held: {BudgetCategory.outings: Money.rupees(500)},
+      );
+      expect(moves.map((move) => (move.from, move.amount)), [
+        (BudgetCategory.trySomethingNew, Money.rupees(100)),
+        (BudgetCategory.food, Money.rupees(200)),
+      ]);
     });
 
     test('cannot move more than is banked or to a spendable category', () {

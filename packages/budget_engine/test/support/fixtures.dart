@@ -65,3 +65,44 @@ List<Adjustment> persist(List<AdjustmentDraft> drafts, String batchId, DateTime 
           draft: draft,
         ),
     ];
+
+var _holdCounter = 0;
+
+final class PersistedEvent {
+  const PersistedEvent(this.adjustments, this.holds);
+
+  final List<Adjustment> adjustments;
+  final List<Hold> holds;
+}
+
+PersistedEvent persistEvent({
+  required String batchId,
+  required DateTime at,
+  List<AdjustmentDraft> moves = const [],
+  List<HoldDraft> newHolds = const [],
+  List<HoldRelease> releases = const [],
+}) {
+  Hold hold(HoldDraft draft, String commitmentId) => Hold.fromDraft(
+        id: 'h${_holdCounter++}',
+        batchId: batchId,
+        commitmentId: commitmentId,
+        createdAt: at,
+        draft: draft,
+      );
+  return PersistedEvent(
+    persist([...moves, for (final release in releases) ...release.moves], batchId, at),
+    [
+      for (final draft in newHolds) hold(draft, batchId),
+      for (final release in releases)
+        for (final draft in release.holds) hold(draft, release.commitmentId),
+    ],
+  );
+}
+
+PersistedEvent persistResult(AutoAdjustResult result, String batchId, DateTime at) => persistEvent(
+      batchId: batchId,
+      at: at,
+      moves: result.moves,
+      newHolds: result.newHolds,
+      releases: result.releases,
+    );

@@ -46,7 +46,7 @@ D10 was already taken by the Gradle note above, so Hari's answers start at D11.
 - Q4: expected next start is the anchor day of a following month, clamped to month length and at least 14 days after the start (F02).
 - Q5: a ninth, non-spendable Goals category, tier `savings` (F07).
 - Q6: Buffer is fixed; the other five weights blend from the median of the last three cycles, moving at most 3 percentage points per cycle (F06).
-- Q7: auto-adjust refills Food to floor times days left and Petrol to its prorated remaining floor (F08).
+- Q7: auto-adjust refills Food to floor times days left and Petrol to its prorated remaining floor (F08). The Food part is superseded by D23.
 - Q8: allowance day boundary 04:00 IST; late-night mode from 00:00 to 04:00 (F10).
 - Q9: a fifth notification type, "Upcoming due" (F16).
 - Q10: USE_EXACT_ALARM while the app is sideloaded (F17).
@@ -93,8 +93,8 @@ Runs after phase 8. Constraints:
 `BudgetCategory` lists the launch categories plus Goals (`savings`), Bike fund and Recurring fund (`reserve`, F30), and Unlogged (`correction`). The database stores the enum name. Display names, icons and colours belong to the app.
 
 ### D19. Ordered rules
-- Allocation, after floors are raised: Try something new, Outings, Buffer, this cycle's Goals allocation, supply items not due this cycle (least urgent first). If still short: Misc, Recurring fund, Bike fund, supply items due this cycle, Night food stock top-up, Petrol, then Food (F31, F34).
-- Auto-adjust donors: Buffer, Try something new, Outings, Essentials stock above what is reserved for items due this cycle.
+- Allocation, after floors are raised (the final cuts are superseded by D26): Try something new, Outings, Buffer, this cycle's Goals allocation, supply items not due this cycle (least urgent first). If still short: Misc, Recurring fund, Bike fund, supply items due this cycle, Night food stock top-up, Petrol, then Food (F31, F34).
+- Auto-adjust donors: Buffer, Try something new, Outings, Essentials stock above what is reserved for items due this cycle. Held money is never a donor (D23).
 - Unlogged balance-check spending is covered from: Try something new, Outings, Misc, Buffer, spare Essentials stock, Petrol down to its remaining floor, Food down to its remaining floor. Goals savings are never touched automatically.
 
 ### D20. Interpretations of the brief
@@ -110,3 +110,27 @@ A shortfall becomes a transaction in Unlogged with method `unrecorded` and sourc
 
 ### D22. Purchase planner scenarios
 Savings come from Outings, Try something new and Misc at the current daily rate, plus lump sums. Fast uses 75 percent of the flexible daily rate, all banked money and half the Buffer. Balanced uses 50 percent and banked money. Slow uses 25 percent. Trade-offs are shown as skipped outings and treats, using the median transaction size in Outings and Try something new, or fallback costs passed in by the app (₹400 and ₹150 until there is history). If a target date can't be met even at 100 percent of the flexible rate plus all banked money and Buffer, the plan says so and gives the earliest possible date and the extra income needed.
+
+## Decided after the Phase 1 review
+
+### D23. Food refills move one week and hold the rest (F35, Hari's design)
+When Food reaches zero:
+1. Floor x min(days left, 7) is moved into Food from the donors (Buffer, Try something new, Outings, spare Essentials stock) as a normal ledger move. Any overshoot below zero is covered too.
+2. A hold is placed on the donors, in the same order, for the rest of the commitment: floor x days left beyond 7, minus anything already held. Held money stays in its category but is not spendable. The spendable pool, allowance, banked money, balance-check cover and later refills all exclude it.
+3. At each weekly rollover (7 allowance days after the commitment's last move or release), or when Food reaches zero again, up to 7 days of the hold are released into Food as normal ledger moves, oldest commitment first.
+4. The summary shows "Moved X, holding Y" (`totalMoved`, `totalHeld`).
+5. Holds are stored as `Hold` rows: positive to place, negative to release, each tagged with its commitment. Undo (`BatchUndo`) reverses a batch's moves and holds together, and cascades to later releases from that commitment, so the exact earlier state comes back.
+6. Holds are dropped at cycle close. The held money is still in its category and is swept by the normal close rules (D12).
+7. If the donors cannot cover the hold, the uncovered amount is reported at once as `holdShortfall`.
+8. If Food reaches zero before day 10 of the cycle, `suggestReplan` is set, and the UI offers the balance check and family summary as well as the normal summary.
+9. Weekly rollover releases at most one week per check, so a missed week releases on the next daily check. If Food still hits zero, the zero trigger releases more.
+
+Petrol and Night food stock keep the plain refill (prorated floor and zero).
+
+### D24. Bike fund and Recurring fund (F30 confirmed)
+Both are non-spendable like Goals, get no card on the home screen, and appear under Supplies and Bike.
+
+### D25. Misc stays out of the donor orders (F31 confirmed)
+
+### D26. Shortfall cut order (F34, changed by Hari)
+After the brief's absorption order is exhausted: Misc, Recurring fund, Bike fund, supply items already due (least urgent first), Petrol, Night food stock, and Food last.

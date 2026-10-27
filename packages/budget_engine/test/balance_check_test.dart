@@ -78,6 +78,21 @@ void main() {
     expect(correction.uncovered, Money.zero);
   });
 
+  test('held money is skipped when covering unlogged spending', () {
+    final correction = BalanceCheck.resolve(
+      comparison: compareWith(800000, 50000),
+      resolution: BalanceResolution.unlogged,
+      balances: balances({BudgetCategory.trySomethingNew: 20000, BudgetCategory.buffer: 100000}),
+      cycleSpendByCategory: const {},
+      cycleAllocations: const {},
+      foodFloorPerDay: Money.rupees(150),
+      petrolFloorRemaining: Money.zero,
+      daysLeft: 21,
+      held: {BudgetCategory.trySomethingNew: Money(20000)},
+    );
+    expect(correction.adjustments.single.from, BudgetCategory.buffer);
+  });
+
   test('after resolving, the next check from the new anchor matches', () {
     final correction = resolve(compareWith(800000, 50000), BalanceResolution.unlogged, balances({BudgetCategory.buffer: 900000}));
     final next = BalanceCheck.compare(

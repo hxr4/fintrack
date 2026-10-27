@@ -12,6 +12,7 @@ export 'src/daily_allowance.dart';
 export 'src/deposit.dart';
 export 'src/donors.dart';
 export 'src/generosity.dart';
+export 'src/hold.dart';
 export 'src/kolkata_time.dart';
 export 'src/largest_remainder.dart';
 export 'src/ledger.dart';

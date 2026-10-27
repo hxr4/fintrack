@@ -65,7 +65,7 @@ Status values: `open` (waiting on a decision), `planned` (fix agreed or needs no
 - **Proposed fix:** Add a ninth, non-spendable category "Goals" with a new tier `savings`. Each Goal tracks its own share through Adjustments into and out of the Goals category. Goal balances carry across cycles and are excluded from the F01 sweep.
 
 ### F08. Auto-adjust refills to zero, which still starves Food
-- **Status:** fixed in phase 1 (`AutoAdjuster.refillTarget`). See F35.
+- **Status:** fixed in phase 1, then changed by D23: Food now gets one week moved and the rest held (F35).
 - **Problem:** Auto-adjust triggers when an essential category "reaches zero". Spending usually overshoots (50 left, 200 spent), and refilling to zero leaves Food empty with days still to go, which breaks the per-day food floor the brief says is never violated.
 - **Proposed fix:** Refill target for Food is floor per day times days left including today. For Petrol it is the prorated remaining Petrol floor. For Night food stock it is zero, since it is a stock fund. The trigger condition stays "reached zero or below", so no money moves on projections alone.
 
@@ -181,13 +181,13 @@ Status values: `open` (waiting on a decision), `planned` (fix agreed or needs no
 - **Proposed fix:** The phase 9 onboarding step checks whether listener access is granted. If not, it explains restricted settings, deep links to the app info screen, and shows the vivo menu path, documented step by step in `docs/vivo-setup.md`. Settings shows a warning while access is missing. The rest of the app never depends on the listener.
 
 ### F30. Bike service fund and recurring set-asides have no category
-- **Status:** fixed in phase 1 (`bikeFund`, `recurringFund`). **Decision: confirm.**
+- **Status:** fixed in phase 1. **Decided (D24):** confirmed; no home card, shown under Supplies and Bike.
 - **Problem:** 5.2 reserves money for a bike service fund and recurring costs, but none of the eight categories holds that money, which is the same gap as Goals (F07).
 - **Why it matters:** Without a home, reserved money either sits in a spendable category or disappears from the plan.
 - **Proposed fix:** Two non-spendable categories with a new tier `reserve`: "Bike fund" and "Recurring fund". Both keep their balance across cycles and are hidden in the UI while zero. Recurring fund stays at zero for now since there are no recurring costs.
 
 ### F31. Misc is missing from the absorption and donor orders
-- **Status:** fixed in phase 1. **Decision: confirm.**
+- **Status:** fixed in phase 1. **Decided (D25):** confirmed.
 - **Problem:** The negative-delta order (5.3) and the auto-adjust donors (5.5) both leave out Misc and data packs. If Misc keeps its full share while Food is pushed below its floor, the food rule is broken.
 - **Proposed fix:** Treat the omission as deliberate protection for data packs. Misc is never a donor in ordinary absorption or auto-adjust. It is cut only when money is truly short, before any floor or due reserve (see F34).
 
@@ -202,12 +202,12 @@ Status values: `open` (waiting on a decision), `planned` (fix agreed or needs no
 - **Proposed fix:** Absorption takes only from this cycle's new Goals allocation, never from saved goal balances.
 
 ### F34. What gives first when floors cannot all be met
-- **Status:** fixed in phase 1. **Decision: confirm.**
+- **Status:** fixed in phase 1. **Decided (D26):** confirmed with Petrol cut before Night food stock.
 - **Problem:** 5.2.5 says to show the shortfall, but allocations must still add up to the money that actually exists, so something has to go below its floor. The brief does not say what.
-- **Proposed fix:** After the brief's absorption order is exhausted, cuts happen in this order: Misc, Recurring fund, Bike fund, supply items already due (least urgent first), Night food stock top-up, Petrol below its floor, and Food below its floor last. The plan reports the exact shortfall amount, which feeds the family summary.
+- **Fix:** After the brief's absorption order is exhausted, cuts happen in this order: Misc, Recurring fund, Bike fund, supply items already due (least urgent first), Petrol below its floor, Night food stock top-up, and Food below its floor last. The plan reports the exact shortfall amount, which feeds the family summary.
 
 ### F35. Early-cycle Food refill can empty every donor at once
-- **Status:** open. **Decision: yes.**
+- **Status:** fixed in phase 1. **Decided (D23):** move one week, hold the rest, release weekly or when Food hits zero again, undo together, drop holds at cycle close, replan prompt before day 10.
 - **Problem:** Found while simulating cycles. Auto-adjust refills Food to floor times days left (F08, agreed). If Food runs out on day 6 of a 31-day cycle, the target is ₹150 x 26 = ₹3,900. That one refill usually takes all of Buffer, Try something new and Outings in a single batch, more than three weeks before the money is actually needed.
 - **Why it matters:** The user loses every flexible rupee because of one bad week, and the Buffer that exists for emergencies is gone on day 6. The single summary will also show a large, alarming move.
-- **Proposed fix:** Refill to floor times the smaller of days left and 7, so each refill covers a week. If Food hits zero again the next week, auto-adjust refills again. Floors stay protected, because every refill still guarantees at least a week of food floor, and the plan-level floor is unchanged. The alternative is to keep F08 as agreed.
+- **Fix:** Hari's design (D23): move one week, hold the rest of the commitment on the donors, release up to a week at each weekly rollover or when Food hits zero again. The full food floor for the rest of the cycle stays protected, but money is not pulled out of Buffer and flexible categories weeks before it is needed.
