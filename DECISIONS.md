@@ -36,46 +36,77 @@ Full-to-full method that sums partial fills in between (FLAWS F15). This reads "
 ### D10. Gradle networking and build warnings
 `org.gradle.jvmargs` forces IPv4 (`-Djava.net.preferIPv4Stack=true`) because the JVM failed to resolve `dl.google.com` through the Tailscale DNS resolvers while macOS resolved it fine. Flutter warns that `home_widget` 0.10.0 still applies the Kotlin Gradle Plugin, which future Flutter versions will reject; check for an updated release before phase 7.
 
-## Open questions
+## Decided after the Phase 0 review
 
-Each question has a recommended default in bold. Answering "defaults" accepts all of them.
+D10 was already taken by the Gradle note above, so Hari's answers start at D11.
 
-**Q1. Encrypt the database with SQLCipher?**
-The build cost is small with the current `sqlite3` package: one pubspec setting and a prebuilt binary, adding a few MB per CPU architecture because the Android build links OpenSSL, plus `flutter_secure_storage` to keep the key in Android Keystore. The real costs are elsewhere. Losing the key (a factory reset of the Keystore, some vivo restore paths) makes the data unreadable. Android Auto Backup becomes useless for the database (F19). Debugging means you can't open the database file with a normal SQLite viewer. The app lock and Android's file-based encryption already protect data on a locked phone.
-**Default: no encryption now, passphrase-encrypted manual backups.** Can be switched on later with a one-time migration.
+### D11. Recommended defaults accepted
+- Q1: no database encryption. The database is included in Android Auto Backup, and manual backups are encrypted with a passphrase.
+- Q2: default weights Food 60, Petrol 14, Outings 9, Try something new 4, Misc 3, Buffer 10, confirmed again in onboarding.
+- Q4: expected next start is the anchor day of a following month, clamped to month length and at least 14 days after the start (F02).
+- Q5: a ninth, non-spendable Goals category, tier `savings` (F07).
+- Q6: Buffer is fixed; the other five weights blend from the median of the last three cycles, moving at most 3 percentage points per cycle (F06).
+- Q7: auto-adjust refills Food to floor times days left and Petrol to its prorated remaining floor (F08).
+- Q8: allowance day boundary 04:00 IST; late-night mode from 00:00 to 04:00 (F10).
+- Q9: a fifth notification type, "Upcoming due" (F16).
+- Q10: USE_EXACT_ALARM while the app is sideloaded (F17).
+- Q11: amounts visible in widget and notifications with a hide setting; FLAG_SECURE on with a toggle (F18).
+- Q13: a clean day is a day that was fully logged or marked "no spend"; spending amount plays no part (F21).
+- Q14: the Food card never turns red (F23).
 
-**Q2. Default weights** Food 60, Petrol 14, Outings 9, Try something new 4, Misc 3, Buffer 10: **keep as is.**
+### D12. Leftover at cycle end (Q3, F01, changed by Hari)
+At cycle close:
+- Night food stock and Essentials stock keep their balance up to their target. The new cycle tops them up to target instead of adding the full target, so a stock fund never exceeds its target. Anything above target goes to Buffer.
+- Bike fund, Recurring fund and Goals keep their balance.
+- Leftover Food, Petrol, Outings, Try something new, Misc and Unlogged go to Buffer.
+- Buffer carries over, capped at two times the closing cycle's Buffer allocation. The excess joins the next cycle's allocation pool and is split by the weights with the new deposit. It is not part of the generosity delta.
+- Negative leftovers (real overspending) reduce Buffer first, then the next cycle's pool.
 
-**Q3. Leftover at cycle end (F01):** **stock funds and set-asides keep their balance, everything else goes to Buffer.** Alternative: leftover adds to next cycle's deposit before allocation.
+The invariant is now: a cycle's allocations sum to its installments plus the carry into the pool, and opening balances plus allocations equal all the money carried in plus the installments.
 
-**Q4. Expected next start (F02):** **anchor day, default 5th, clamped per month.** Alternative: same day as this cycle's actual arrival, as the brief says.
+### D13. Name and id (Q12)
+"Fintrack", `com.hari.fintrack`.
 
-**Q5. Goals category (F07):** **add a ninth, non-spendable "Goals" category.**
+### D14. Card payments (Q15, F27)
+`PaymentMethod` is `cash`, `upi`, `card`, plus an internal `unrecorded` used only by balance-check corrections (D21). Reports include card. The add sheet shows cash and UPI only, unless "Card payments" is enabled in Settings.
 
-**Q6. Blending (F06):** **Buffer fixed, trimmed median of last three cycles, at most 3 points of change per cycle.**
+### D15. Engine values come from settings (Q16)
+The engine has no built-in amounts. `BudgetSettings` carries the food floor per day, petrol floor per cycle, night food stock target, anchor day, day boundary hour and default weights, filled from onboarding and settings. App-side defaults for onboarding: food floor ₹150 per day, petrol floor ₹1,200 per cycle, night food stock ₹750 per cycle, anchor day 5, boundary 04:00. For now: one monthly transfer, rent outside the budget with an excluded amount of 0, no recurring costs. Hari enters real values in onboarding.
 
-**Q7. Auto-adjust refill target (F08):** **Food to floor times days left, Petrol to prorated floor.**
+Rules that come from the brief itself (generosity shares, the 70/30 blend, the 1.5x soft cap and so on) live in `BudgetPolicy` with the brief's values as defaults.
 
-**Q8. Day boundary for allowance (F10):** **04:00 IST**, with late-night mode from 00:00 to 04:00.
+### D16. Deposits are a list (new requirement, F28)
+Each `Deposit` is an `installment` or an `extra`. The planner uses only the cycle's installment total, generosity compares installment totals per cycle, and only extras get the positive-delta split. Phase 1 implements the single monthly installment; the schema and types never assume one deposit per cycle.
 
-**Q9. Notifications (F16):** **add a fifth type, "Upcoming due",** for bike documents, service and supply restocks.
+### D17. Phase 9: payment notification capture (I01 approved)
+Runs after phase 8. Constraints:
+- The notification listener handles only an allowlist of payment-app and bank-app packages. Every other notification is discarded immediately, without reading its content.
+- Raw notification text is never stored, only the parsed amount, merchant string and timestamp.
+- It always creates a suggestion card to confirm, never a transaction.
+- The vivo setup steps are documented.
+- A notification listener is preferred over SMS read permission.
+- Android's restricted-settings block for sideloaded apps is handled first (F29).
 
-**Q10. Exact alarms (F17):** **USE_EXACT_ALARM**, valid while the app is not on Play.
+## Engine design decisions (Phase 1)
 
-**Q11. Privacy (F18):** **amounts visible in widget and notifications with a setting to hide them, FLAG_SECURE on with a toggle.**
+### D18. Categories are a fixed enum
+`BudgetCategory` lists the launch categories plus Goals (`savings`), Bike fund and Recurring fund (`reserve`, F30), and Unlogged (`correction`). The database stores the enum name. Display names, icons and colours belong to the app.
 
-**Q12. Name and id:** **"Fintrack", `com.hari.fintrack`.**
+### D19. Ordered rules
+- Allocation, after floors are raised: Try something new, Outings, Buffer, this cycle's Goals allocation, supply items not due this cycle (least urgent first). If still short: Misc, Recurring fund, Bike fund, supply items due this cycle, Night food stock top-up, Petrol, then Food (F31, F34).
+- Auto-adjust donors: Buffer, Try something new, Outings, Essentials stock above what is reserved for items due this cycle.
+- Unlogged balance-check spending is covered from: Try something new, Outings, Misc, Buffer, spare Essentials stock, Petrol down to its remaining floor, Food down to its remaining floor. Goals savings are never touched automatically.
 
-**Q13. Clean week (F21):** **seven consecutive days where every day was logged or marked "no spend".** Amount spent plays no part.
+### D20. Interpretations of the brief
+- "From the third completed cycle" means blending starts once three cycles have completed, so the fourth plan is the first blended one. A median needs three data points.
+- Petrol floor per cycle is prorated to the cycle's length against 30 days, rounded up.
+- Base daily is the spendable pool at cycle start divided by cycle length (F05).
+- Banked money is the total of the pool above base pace for the rest of the cycle: pool minus base daily times days left. Moving banked money takes from Try something new, then Outings, then Food down to floor times days left.
+- Runway uses pool-category spending on completed days of this cycle in the last seven, base daily on day one, and reports "comfortable" when the average is zero (F11).
+- Awaiting deposit: leftover pool divided by days until the expected start plus three, at least three days (F03).
 
-**Q14. Food card colour (F23):** **never red; amber with a neutral line.**
+### D21. Balance-check corrections
+A shortfall becomes a transaction in Unlogged with method `unrecorded` and source `balanceCheck`. Adjustments then cover it from the D19 order, so the replan is visible in the ledger. A surplus becomes a negative correction transaction in Unlogged, moved to Buffer. Negative amounts are allowed only for balance-check corrections. "Distribute" writes correction transactions per category by this cycle's spending shares. "Ignore" changes nothing, so the next check shows the same difference.
 
-**Q15. Payment methods (F27):** **cash and UPI only, as the brief says.** Alternative: add card.
-
-**Q16. Numbers I need for the engine defaults** (all editable later in onboarding):
-- Food floor per day: brief says ₹150. Confirm.
-- Petrol floor per cycle: no default given. **Suggest ₹1,200** (about 11 litres) until the fuel log has data.
-- Night food stock amount per cycle: no default given. **Suggest ₹600.**
-- Usual deposit day: **5th**, and does the amount arrive in one transfer?
-- Is rent paid from the same bank account this money lands in? If yes, roughly how much stays in the account outside the budget?
-- Recurring costs to set aside for (subscriptions, college fees, anything else)? Data packs stay under Misc.
+### D22. Purchase planner scenarios
+Savings come from Outings, Try something new and Misc at the current daily rate, plus lump sums. Fast uses 75 percent of the flexible daily rate, all banked money and half the Buffer. Balanced uses 50 percent and banked money. Slow uses 25 percent. Trade-offs are shown as skipped outings and treats, using the median transaction size in Outings and Try something new, or fallback costs passed in by the app (₹400 and ₹150 until there is history). If a target date can't be met even at 100 percent of the flexible rate plus all banked money and Buffer, the plan says so and gives the earliest possible date and the extra income needed.
