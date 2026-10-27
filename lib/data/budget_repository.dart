@@ -8,6 +8,11 @@ import 'codecs.dart';
 import 'database.dart';
 import 'ids.dart';
 
+DateTime receivedInstant(CivilDate date, DateTime now) {
+  final noon = KolkataTime.at(date, 12);
+  return noon.isAfter(now) ? now : noon;
+}
+
 final class BudgetRepository {
   BudgetRepository(this.db, {IdGenerator? ids}) : ids = ids ?? IdGenerator();
 
@@ -45,6 +50,15 @@ final class BudgetRepository {
       defaultWeights: Codecs.parseWeights(map[SettingKeys.weights]!),
     );
   }
+
+  Future<void> saveBudgetSettings(BudgetSettings settings) => _putSettings({
+        SettingKeys.foodFloor: '${settings.foodFloorPerDay.paise}',
+        SettingKeys.petrolFloor: '${settings.petrolFloorPerCycle.paise}',
+        SettingKeys.nightFoodStock: '${settings.nightFoodStockTarget.paise}',
+        SettingKeys.anchorDay: '${settings.anchorDay}',
+        SettingKeys.dayBoundaryHour: '${settings.dayBoundaryHour}',
+        SettingKeys.weights: Codecs.weights(settings.defaultWeights),
+      });
 
   Future<void> _saveBudgetSettings(BudgetSettings settings, Money excluded) => _putSettings({
         SettingKeys.foodFloor: '${settings.foodFloorPerDay.paise}',
@@ -118,6 +132,7 @@ final class BudgetRepository {
             price: draft.price,
             lifespanDays: draft.lifespanDays,
             lastRestock: draft.lastRestock,
+            lastRestockEstimated: true,
           ),
         ),
     ];
@@ -131,7 +146,7 @@ final class BudgetRepository {
     final deposit = Deposit(
       id: ids.next('deposit'),
       amount: input.deposit,
-      receivedAt: KolkataTime.at(input.depositDate, 12),
+      receivedAt: receivedInstant(input.depositDate, now),
       kind: DepositKind.installment,
     );
     final planned = CyclePlanning.plan(
@@ -147,12 +162,11 @@ final class BudgetRepository {
       await db.batch((batch) {
         batch.insertAll(db.supplyItems, [
           for (final supply in supplies)
-            SupplyItemsCompanion.insert(
-              id: supply.state.id,
-              name: supply.name,
-              pricePaise: supply.state.price.paise,
-              lifespanDays: supply.state.lifespanDays,
-              lastRestock: supply.state.lastRestock.toString(),
+            _supplyCompanion(
+              supply.withState(ReserveCalculator.afterAllocation(
+                supply.state,
+                planned.plan.supplyAllocations[supply.state.id] ?? Money.zero,
+              )),
             ),
         ]);
         batch.insertAll(db.recurringCosts, [
@@ -178,6 +192,118 @@ final class BudgetRepository {
       await savePreferences(preferences.copyWith(onboarded: true, cardEnabled: input.cardEnabled));
     });
   }
+
+  SupplyItemsCompanion _supplyCompanion(NamedSupply supply) => SupplyItemsCompanion.insert(
+        id: supply.state.id,
+        name: supply.name,
+        pricePaise: supply.state.price.paise,
+        lifespanDays: supply.state.lifespanDays,
+        lastRestock: supply.state.lastRestock.toString(),
+        savedPaise: Value(supply.state.saved.paise),
+        lastRestockEstimated: Value(supply.state.lastRestockEstimated),
+      );
+
+  Future<void> upsertSupply(NamedSupply supply) =>
+      db.into(db.supplyItems).insertOnConflictUpdate(_supplyCompanion(supply));
+
+  Future<void> deleteSupply(String id) => (db.delete(db.supplyItems)..where((table) => table.id.equals(id))).go();
+
+  Future<void> upsertRecurring(NamedRecurringCost cost) => db.into(db.recurringCosts).insertOnConflictUpdate(
+        RecurringCostsCompanion.insert(
+          id: cost.state.id,
+          name: cost.name,
+          amountPaise: cost.state.amount.paise,
+          everyMonths: cost.state.everyMonths,
+        ),
+      );
+
+  Future<void> deleteRecurring(String id) =>
+      (db.delete(db.recurringCosts)..where((table) => table.id.equals(id))).go();
+
+  Future<void> insertFuelFill(int cycleId, LinkedFuelFill linked) => db.into(db.fuelFills).insert(
+        FuelFillsCompanion.insert(
+          id: linked.fill.id,
+          cycleId: cycleId,
+          transactionId: linked.transactionId,
+          date: linked.fill.date.toString(),
+          amountPaise: linked.fill.amount.paise,
+          pricePerLitrePaise: linked.fill.pricePerLitre.paise,
+          odometerKm: linked.fill.odometerKm,
+          fullTank: linked.fill.fullTank,
+        ),
+      );
+
+  Future<void> deleteFuelFillsForTransaction(String transactionId) =>
+      (db.delete(db.fuelFills)..where((table) => table.transactionId.equals(transactionId))).go();
+
+  Future<void> saveBike(BikeProfile bike) {
+    final service = bike.service;
+    return _putSettings({
+      SettingKeys.bikeServiceIntervalKm: '${service.intervalKm ?? ''}',
+      SettingKeys.bikeServiceIntervalMonths: '${service.intervalMonths ?? ''}',
+      SettingKeys.bikeServiceCost: '${service.cost.paise}',
+      SettingKeys.bikeLastServiceDate: service.lastServiceDate?.toString() ?? '',
+      SettingKeys.bikeLastServiceKm: '${service.lastServiceKm ?? ''}',
+      SettingKeys.bikeInsuranceExpiry: bike.insuranceExpiry?.toString() ?? '',
+      SettingKeys.bikePucExpiry: bike.pucExpiry?.toString() ?? '',
+    });
+  }
+
+  BikeProfile _bikeFrom(Map<String, String> map) {
+    int? intOf(String key) => int.tryParse(map[key] ?? '');
+    CivilDate? dateOf(String key) {
+      final value = map[key] ?? '';
+      return value.isEmpty ? null : CivilDate.parse(value);
+    }
+
+    return BikeProfile(
+      service: BikeServicePlan(
+        intervalKm: intOf(SettingKeys.bikeServiceIntervalKm),
+        intervalMonths: intOf(SettingKeys.bikeServiceIntervalMonths),
+        cost: Money(intOf(SettingKeys.bikeServiceCost) ?? 0),
+        lastServiceDate: dateOf(SettingKeys.bikeLastServiceDate),
+        lastServiceKm: intOf(SettingKeys.bikeLastServiceKm),
+      ),
+      insuranceExpiry: dateOf(SettingKeys.bikeInsuranceExpiry),
+      pucExpiry: dateOf(SettingKeys.bikePucExpiry),
+    );
+  }
+
+  Future<void> insertAnchor(AnchorRecord anchor) => db.into(db.balanceAnchors).insert(
+        BalanceAnchorsCompanion.insert(
+          at: Codecs.instant(anchor.at),
+          bankPaise: anchor.bank.paise,
+          cashPaise: anchor.cash.paise,
+          excludedPaise: anchor.excluded.paise,
+        ),
+      );
+
+  Future<(List<Deposit>, List<Transaction>)> activitySince(DateTime instant) async {
+    final after = Codecs.instant(instant);
+    final depositRows = await (db.select(db.deposits)..where((table) => table.receivedAt.isBiggerThanValue(after))).get();
+    final transactionRows =
+        await (db.select(db.transactions)..where((table) => table.occurredAt.isBiggerThanValue(after))).get();
+    return (
+      [
+        for (final row in depositRows)
+          Deposit(
+            id: row.id,
+            amount: Money(row.amountPaise),
+            receivedAt: Codecs.parseInstant(row.receivedAt),
+            kind: DepositKind.values.byName(row.kind),
+          ),
+      ],
+      [for (final row in transactionRows) _transaction(row)],
+    );
+  }
+
+  Future<void> updateCycle(CycleRecord cycle) =>
+      (db.update(db.cycles)..where((table) => table.id.equals(cycle.id))).write(CyclesCompanion(
+        expectedNextStart: Value(cycle.window.nextStart.toString()),
+        petrolFloorPaise: Value(cycle.petrolFloor.paise),
+        foodFloorPaise: Value(cycle.foodFloor.paise),
+        baseDailyPaise: Value(cycle.baseDaily.paise),
+      ));
 
   Future<CycleRow?> _openCycle() => (db.select(db.cycles)
         ..where((table) => table.closedOn.isNull())
@@ -210,6 +336,12 @@ final class BudgetRepository {
     final holdRows = await (db.select(db.holds)..where((table) => table.cycleId.equals(id))).get();
     final batchRows = await (db.select(db.batches)..where((table) => table.cycleId.equals(id))).get();
     final supplyRows = await db.select(db.supplyItems).get();
+    final fuelRows = await db.select(db.fuelFills).get();
+    final anchorRow = await (db.select(db.balanceAnchors)
+          ..orderBy([(table) => OrderingTerm.desc(table.at), (table) => OrderingTerm.desc(table.id)])
+          ..limit(1))
+        .getSingleOrNull();
+    final settingsMap = await _settingsMap();
     final recurringRows = await db.select(db.recurringCosts).get();
     final keywordRows = await db.select(db.keywordMappings).get();
 
@@ -296,6 +428,8 @@ final class BudgetRepository {
               price: Money(row.pricePaise),
               lifespanDays: row.lifespanDays,
               lastRestock: CivilDate.parse(row.lastRestock),
+              saved: Money(row.savedPaise),
+              lastRestockEstimated: row.lastRestockEstimated,
             ),
           ),
       ],
@@ -307,6 +441,29 @@ final class BudgetRepository {
           ),
       ],
       learnedKeywords: {for (final row in keywordRows) row.keyword: Codecs.category(row.category)},
+      fuelFills: [
+        for (final row in fuelRows)
+          LinkedFuelFill(
+            transactionId: row.transactionId,
+            fill: FuelFill(
+              id: row.id,
+              date: CivilDate.parse(row.date),
+              amount: Money(row.amountPaise),
+              pricePerLitre: Money(row.pricePerLitrePaise),
+              odometerKm: row.odometerKm,
+              fullTank: row.fullTank,
+            ),
+          ),
+      ],
+      bike: _bikeFrom(settingsMap),
+      latestAnchor: anchorRow == null
+          ? null
+          : AnchorRecord(
+              at: Codecs.parseInstant(anchorRow.at),
+              bank: Money(anchorRow.bankPaise),
+              cash: Money(anchorRow.cashPaise),
+              excluded: Money(anchorRow.excludedPaise),
+            ),
     );
   }
 
@@ -349,8 +506,12 @@ final class BudgetRepository {
             source: transaction.source.name,
           ));
 
-  Future<void> deleteTransaction(String id) =>
-      (db.delete(db.transactions)..where((table) => table.id.equals(id))).go();
+  Future<void> deleteTransaction(String id) async {
+    await db.transaction(() async {
+      await deleteFuelFillsForTransaction(id);
+      await (db.delete(db.transactions)..where((table) => table.id.equals(id))).go();
+    });
+  }
 
   Future<void> insertBatch({
     required int cycleId,
@@ -469,11 +630,20 @@ final class BudgetRepository {
     required int closingCycleId,
     required CivilDate closedOn,
     required NewCyclePlan next,
+    required List<NamedSupply> supplies,
   }) async {
     await db.transaction(() async {
       await (db.update(db.cycles)..where((table) => table.id.equals(closingCycleId)))
           .write(CyclesCompanion(closedOn: Value(closedOn.toString())));
       await _insertCycle(next.plan, next.opening, next.deposit);
+      for (final supply in supplies) {
+        await upsertSupply(supply.withState(ReserveCalculator.afterAllocation(
+          supply.state,
+          next.plan.supplyAllocations[supply.state.id] ?? Money.zero,
+        )));
+      }
     });
   }
+
+  Future<String> excludedAmount() async => (await _settingsMap())[SettingKeys.excluded] ?? '0';
 }

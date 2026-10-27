@@ -1,6 +1,7 @@
 import 'package:budget_engine/budget_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../app/state.dart';
 import '../../app/strings.dart';
@@ -76,6 +77,15 @@ class CategoryScreen extends ConsumerWidget {
               ],
             ),
           ),
+          if (category == BudgetCategory.essentialsStock || category == BudgetCategory.petrol) ...[
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              key: const Key('open-supplies'),
+              onPressed: () => context.push(category == BudgetCategory.petrol ? '/supplies?tab=1' : '/supplies'),
+              icon: Icon(category == BudgetCategory.petrol ? Icons.local_gas_station : Icons.inventory_2_outlined),
+              label: Text(category == BudgetCategory.petrol ? S.logFuel : S.tabSupplies),
+            ),
+          ],
           if (moves.isNotEmpty || holds.isNotEmpty) ...[
             const SizedBox(height: 16),
             Text(S.moves, style: textTheme.titleSmall),

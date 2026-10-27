@@ -12,6 +12,13 @@ abstract final class SettingKeys {
   static const dayBoundaryHour = 'dayBoundaryHour';
   static const weights = 'weights';
   static const excluded = 'excludedPaise';
+  static const bikeServiceIntervalKm = 'bikeServiceIntervalKm';
+  static const bikeServiceIntervalMonths = 'bikeServiceIntervalMonths';
+  static const bikeServiceCost = 'bikeServiceCostPaise';
+  static const bikeLastServiceDate = 'bikeLastServiceDate';
+  static const bikeLastServiceKm = 'bikeLastServiceKm';
+  static const bikeInsuranceExpiry = 'bikeInsuranceExpiry';
+  static const bikePucExpiry = 'bikePucExpiry';
 }
 
 final class AppPreferences {

@@ -34,10 +34,10 @@ class TransactionTile extends ConsumerWidget {
       onDismissed: (_) async {
         final controller = ref.read(budgetProvider.notifier);
         final messenger = ScaffoldMessenger.of(context);
-        await controller.deleteTransaction(transaction);
+        final entry = await controller.deleteTransaction(transaction);
         messenger.showSnackBar(SnackBar(
           content: const Text(S.deleted),
-          action: SnackBarAction(label: S.undo, onPressed: () => controller.restoreTransaction(transaction)),
+          action: SnackBarAction(label: S.undo, onPressed: () => controller.restore(entry)),
         ));
       },
       child: ListTile(

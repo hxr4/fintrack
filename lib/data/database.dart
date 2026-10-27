@@ -122,6 +122,23 @@ class SupplyItems extends Table {
   IntColumn get pricePaise => integer()();
   IntColumn get lifespanDays => integer()();
   TextColumn get lastRestock => text()();
+  IntColumn get savedPaise => integer().withDefault(const Constant(0))();
+  BoolColumn get lastRestockEstimated => boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@DataClassName('FuelFillRow')
+class FuelFills extends Table {
+  TextColumn get id => text()();
+  IntColumn get cycleId => integer().references(Cycles, #id)();
+  TextColumn get transactionId => text()();
+  TextColumn get date => text()();
+  IntColumn get amountPaise => integer()();
+  IntColumn get pricePerLitrePaise => integer()();
+  IntColumn get odometerKm => integer()();
+  BoolColumn get fullTank => boolean()();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
@@ -176,6 +193,7 @@ class StreakDays extends Table {
     Holds,
     Batches,
     SupplyItems,
+    FuelFills,
     RecurringCosts,
     BalanceAnchors,
     KeywordMappings,
@@ -188,10 +206,17 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.open() : super(driftDatabase(name: 'fintrack'));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+        onUpgrade: (migrator, from, to) async {
+          if (from < 2) {
+            await migrator.addColumn(supplyItems, supplyItems.savedPaise);
+            await migrator.addColumn(supplyItems, supplyItems.lastRestockEstimated);
+            await migrator.createTable(fuelFills);
+          }
+        },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');
         },

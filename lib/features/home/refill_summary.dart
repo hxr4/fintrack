@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../app/state.dart';
 import '../../app/strings.dart';
@@ -42,7 +43,13 @@ class RefillSummaryCard extends ConsumerWidget {
             Wrap(
               spacing: 8,
               children: [
-                OutlinedButton(onPressed: () => _later(context), child: const Text(S.balanceCheck)),
+                OutlinedButton(
+                  onPressed: () {
+                    controller.markSummarySeen(batch.id);
+                    context.push('/balance-check');
+                  },
+                  child: const Text(S.balanceCheck),
+                ),
                 OutlinedButton(onPressed: () => _later(context), child: const Text(S.familySummary)),
               ],
             ),

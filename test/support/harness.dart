@@ -49,7 +49,14 @@ AppDatabase memoryDatabase() {
   return AppDatabase(NativeDatabase.memory());
 }
 
-OnboardingInput standardInput(CivilDate depositDate, {bool cardEnabled = false, int deposit = 12000}) => OnboardingInput(
+OnboardingInput standardInput(
+  CivilDate depositDate, {
+  bool cardEnabled = false,
+  int deposit = 12000,
+  List<SupplyDraft> supplies = const [],
+  List<RecurringDraft> recurring = const [],
+}) =>
+    OnboardingInput(
       deposit: Money.rupees(deposit),
       depositDate: depositDate,
       anchorDay: 5,
@@ -67,14 +74,20 @@ OnboardingInput standardInput(CivilDate depositDate, {bool cardEnabled = false, 
       bank: Money.rupees(12000),
       cash: Money.zero,
       excluded: Money.zero,
-      recurring: const [],
-      supplies: const [],
+      recurring: recurring,
+      supplies: supplies,
       cardEnabled: cardEnabled,
     );
 
-Future<void> seed(AppDatabase db, FakeClock clock, {bool cardEnabled = false}) =>
+Future<void> seed(
+  AppDatabase db,
+  FakeClock clock, {
+  bool cardEnabled = false,
+  List<SupplyDraft> supplies = const [],
+  List<RecurringDraft> recurring = const [],
+}) =>
     BudgetRepository(db).completeOnboarding(
-      input: standardInput(KolkataTime.dateOf(clock.now), cardEnabled: cardEnabled),
+      input: standardInput(KolkataTime.dateOf(clock.now), cardEnabled: cardEnabled, supplies: supplies, recurring: recurring),
       now: clock.now,
       preferences: const AppPreferences(),
     );
@@ -115,3 +128,14 @@ String ringText(WidgetTester tester) =>
 String leftText(WidgetTester tester, BudgetCategory category) => tester
     .widget<Text>(find.descendant(of: find.byKey(Key('left-${category.name}')), matching: find.byType(Text)))
     .data!;
+
+Future<ProviderContainer> startContainer(AppDatabase db, FakeClock clock) async {
+  final container = ProviderContainer(overrides: [
+    databaseProvider.overrideWithValue(db),
+    clockProvider.overrideWithValue(clock.call),
+    authenticatorProvider.overrideWithValue(FakeAuthenticator()),
+    secureWindowProvider.overrideWithValue(FakeSecureWindow()),
+  ]);
+  await container.read(budgetProvider.future);
+  return container;
+}

@@ -226,7 +226,6 @@ abstract final class S {
   static const depositDateInFuture = 'Pick today or an earlier date';
   static const newCycleStarted = 'New cycle started';
   static const extraAdded = 'Extra income added';
-  static const balanceCheckLater = 'Balance check arrives in the next update.';
 
   static const goalsTitle = 'Goals';
   static const goalsLater = 'The purchase planner arrives in a later update.';
@@ -250,4 +249,103 @@ abstract final class S {
   static const undone = 'Undone';
   static const today = 'Today';
   static const yesterday = 'Yesterday';
+
+  static const planTools = 'Tools';
+  static const balanceCheckHint = 'Compare what is in the bank and in your pocket with what the app expects';
+  static const suppliesAndBike = 'Supplies and bike';
+  static const suppliesAndBikeHint = 'Restocks, fuel log, service and documents';
+  static const recurringCosts = 'Recurring costs';
+  static const budgetValuesHint2 = 'Floors, night food stock, usual deposit day and the split';
+
+  static const tabSupplies = 'Supplies';
+  static const tabBike = 'Bike';
+  static const tabRecurring = 'Recurring';
+  static String fundLeft(String name, String amount) => '$name: $amount';
+  static String savedOf(String saved, String price) => '$saved saved of $price';
+  static String daysLeftLabel(int days) => days == 0 ? 'Due now' : (days == 1 ? '1 day left' : '$days days left');
+  static String lifespanLine(int days) => 'Lasts about $days days';
+  static const restocked = 'Restocked';
+  static const edit = 'Edit';
+  static const delete = 'Delete';
+  static const amountPaid = 'Amount paid';
+  static const noSupplies = 'No supply items yet';
+  static const editSupply = 'Edit supply item';
+  static String restockLogged(String name) => 'Restock of $name logged';
+  static const newItemsNextCycle = 'Changes here are set aside for from the next cycle.';
+
+  static const fuelSummary = 'Fuel';
+  static String mileage(String kmPerLitre) => '$kmPerLitre km per litre';
+  static String latestMileage(String kmPerLitre) => 'Last full tank: $kmPerLitre km per litre';
+  static String costPerKm(String amount) => '$amount per km';
+  static String kmPerDay(String km) => 'About $km km a day lately';
+  static String petrolSuggestion(String suggested, String floor) =>
+      'Recent riding suggests about $suggested per cycle. The petrol floor is $floor.';
+  static const mileageNeedsTwoFull = 'Mileage shows after two full-tank fills.';
+  static const logFuel = 'Log fuel';
+  static const pricePerLitre = 'Price per litre';
+  static const odometer = 'Odometer (km)';
+  static const fullTank = 'Filled to full';
+  static String litres(String value) => '$value L';
+  static const recentFills = 'Recent fills';
+  static String fillLine(String date, String litres, int odometer, bool full) =>
+      '$date · $litres · $odometer km${full ? ' · full' : ''}';
+  static const odometerTooLow = 'Odometer is lower than the last fill';
+  static String fuelLogged(String amount) => 'Fuel of $amount logged in Petrol';
+
+  static const service = 'Service';
+  static const serviceNotSet = 'Add the service interval to see when it is due.';
+  static String serviceDue(String when) => 'Next service: $when';
+  static String serviceDueDays(int days) => days <= 0 ? 'due now' : 'in about $days days';
+  static String serviceDueKm(int km) => km <= 0 ? 'due by distance' : '$km km to go';
+  static const editService = 'Service details';
+  static const serviceIntervalKm = 'Service every how many km';
+  static const serviceIntervalMonths = 'Or every how many months';
+  static const serviceCost = 'Usual service cost';
+  static const lastServiceDate = 'Last service date';
+  static const lastServiceKm = 'Odometer at last service (km)';
+  static const recordService = 'Record a service';
+  static const serviceLogged = 'Service logged';
+  static const notSet = 'Not set';
+  static const documents = 'Documents';
+  static const insuranceExpiry = 'Insurance expires';
+  static const pucExpiry = 'PUC expires';
+  static String expiresIn(String date, int days) =>
+      days < 0 ? '$date, expired' : (days == 0 ? '$date, today' : '$date, in $days days');
+  static const optionalNumber = 'Leave empty if unknown';
+
+  static const noRecurring = 'No recurring costs';
+  static String perCycle(String amount) => '$amount set aside each cycle';
+  static const paid = 'Paid';
+  static const editRecurring = 'Edit recurring cost';
+  static String recurringPaid(String name) => '$name payment logged';
+
+  static const balanceCheckTitle = 'Balance check';
+  static const balanceCheckIntro =
+      'Enter what is in your bank account and in your pocket right now. The app compares it with what it expects from your entries.';
+  static const compare = 'Compare';
+  static const expected = 'Expected';
+  static const actual = 'Actual';
+  static String lastChecked(String date) => 'Compared with the check on $date';
+  static const balanceMatches = 'Everything matches.';
+  static String balanceLower(String amount) =>
+      'Your money is $amount lower than the app expected. That usually means a few spends were not logged.';
+  static String balanceHigher(String amount) =>
+      'Your money is $amount higher than the app expected. That can happen when something was logged twice or money came in.';
+  static const resolveUnlogged = 'Log it as unlogged spending';
+  static const resolveUnloggedHint = 'Taken from flexible categories and Buffer first. Floors stay protected.';
+  static const resolveDistribute = 'Spread it across categories';
+  static const resolveDistributeHint = 'Split by how you have spent this cycle.';
+  static const resolveIgnore = 'Leave it as it is';
+  static const resolveIgnoreHint = 'Nothing changes. The next check will show the same difference.';
+  static const apply = 'Apply';
+  static const balanceUpdated = 'Plan updated from your real balance';
+  static String balanceUncovered(String amount) => '$amount could not be covered without touching floors. It shows as a shortfall.';
+
+  static const budgetValuesTitle = 'Budget values';
+  static const budgetValuesNote =
+      'Floors apply straight away. The split and night food stock apply from the next cycle. A new deposit day moves this cycle\'s expected end if that date is still ahead.';
+  static const budgetValuesSaved = 'Budget values saved';
+
+  static const demoData = 'Load three demo months';
+  static const demoDataHint = 'Debug builds only. Fills this empty install with simulated data.';
 }

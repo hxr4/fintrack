@@ -1,6 +1,7 @@
 import 'package:budget_engine/budget_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../app/state.dart';
 import '../../app/strings.dart';
@@ -59,9 +60,57 @@ class PlanScreen extends ConsumerWidget {
             icon: const Icon(Icons.account_balance_wallet_outlined),
             label: const Text(S.moneyArrived),
           ),
-          const SizedBox(height: 16),
-          Text(S.balanceCheckLater, style: textTheme.bodySmall?.copyWith(color: palette.mutedText)),
+          const SizedBox(height: 24),
+          Text(S.planTools, style: textTheme.titleSmall?.copyWith(color: palette.mutedText)),
+          const SizedBox(height: 8),
+          _ToolTile(
+            key: const Key('tool-balance-check'),
+            icon: Icons.account_balance_outlined,
+            title: S.balanceCheckTitle,
+            subtitle: S.balanceCheckHint,
+            route: '/balance-check',
+          ),
+          _ToolTile(
+            key: const Key('tool-supplies'),
+            icon: Icons.inventory_2_outlined,
+            title: S.suppliesAndBike,
+            subtitle: S.suppliesAndBikeHint,
+            route: '/supplies',
+          ),
+          _ToolTile(
+            key: const Key('tool-budget-values'),
+            icon: Icons.tune,
+            title: S.budgetValuesTitle,
+            subtitle: S.budgetValuesHint2,
+            route: '/budget-values',
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _ToolTile extends StatelessWidget {
+  const _ToolTile({super.key, required this.icon, required this.title, required this.subtitle, required this.route});
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String route;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: SectionCard(
+        padding: EdgeInsets.zero,
+        onTap: () => context.push(route),
+        child: ListTile(
+          leading: Icon(icon, color: context.palette.accent),
+          title: Text(title),
+          subtitle: Text(subtitle),
+          trailing: const Icon(Icons.chevron_right),
+        ),
       ),
     );
   }

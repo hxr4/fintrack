@@ -86,7 +86,7 @@ Status values: `open` (waiting on a decision), `planned` (fix agreed or needs no
 - **Proposed fix:** Average over pool categories only. Use the available days when fewer than seven, and fall back to base daily on day 1. When the average is zero, show "comfortable to cycle end" instead of a date.
 
 ### F12. Balance check has no opening balance and mixes in other money
-- **Status:** engine fixed in phase 1, opening balance recorded at onboarding in phase 2 (D35), screen planned for phase 3. After a "distribute" correction the app must run auto-adjust.
+- **Status:** fixed in phase 3 (D42). Opening balance recorded at onboarding, balance check screen with three neutral resolutions, auto-adjust after corrections.
 - **Problem:** Expected balance needs a starting bank balance and cash in hand, which the app never records. Rent is paid separately, possibly from the same account. Moving money from bank to cash (ATM, a friend paying cash for UPI) is not a spend, but there is no transfer type.
 - **Why it matters:** Without these, every balance check reports a false difference and the replan uses wrong numbers. That is the opposite of the neutral, trustworthy check the brief wants.
 - **Proposed fix:** Record an opening balance (bank plus cash) at onboarding and after each balance check. Compare totals (bank plus cash), not each account separately, so cash withdrawals need no logging. Let the user mark money in the account that is outside the budget (rent, savings) as an excluded amount. The Unlogged adjustment is a transaction in a hidden "Unlogged" category, so category totals stay honest.
@@ -97,12 +97,12 @@ Status values: `open` (waiting on a decision), `planned` (fix agreed or needs no
 - **Proposed fix:** Choosing a scenario creates a plan that reduces flexible allocations for the remaining days and moves the saved amount into the Goals category at each day's rollover, through Adjustments. "2 outings and 3 treats" uses the median transaction size in Outings and Try something new from history, or defaults of 400 and 150 rupees until there is history.
 
 ### F14. Supply set-asides do not catch up for items due soon
-- **Status:** planned (phase 3). **Decision: no.**
+- **Status:** fixed in phase 3 (D39).
 - **Problem:** Set-aside equals price divided by lifespan times cycle length. An item that is due in 10 days, with nothing saved for it yet, still only gets a third of its price this cycle.
 - **Proposed fix:** Each supply item keeps an accumulated balance. Set-aside for the cycle is the larger of the steady rate and what is needed to reach the full price by the expected restock date, capped at the price. Learned lifespan uses an exponential moving average and ignores the first restock after onboarding if the onboarding last-restock date was a guess.
 
 ### F15. Mileage discards data when there are partial fills
-- **Status:** planned (phase 3). **Decision: no.**
+- **Status:** fixed in phase 3 (D40).
 - **Problem:** "Computed only between consecutive full-tank fills" can be read as ignoring any interval that contains a partial fill.
 - **Proposed fix:** Standard full-to-full method. Distance is odometer difference between two full fills. Fuel is the sum of litres for every fill after the first full fill up to and including the second. Litres are stored as integer millilitres. Logging a fill also creates the Petrol transaction for the amount paid, so it is never logged twice.
 
@@ -213,7 +213,7 @@ Status values: `open` (waiting on a decision), `planned` (fix agreed or needs no
 - **Fix:** Hari's design (D23): move one week, hold the rest of the commitment on the donors, release up to a week at each weekly rollover or when Food hits zero again. The full food floor for the rest of the cycle stays protected, but money is not pulled out of Buffer and flexible categories weeks before it is needed.
 
 ### F36. Budget values cannot be edited after onboarding
-- **Status:** planned (phase 3). **Decision: no.**
+- **Status:** fixed in phase 3 (D43).
 - **Problem:** Food floor, petrol floor, night food stock, anchor day and weights are set in onboarding. Settings shows them but cannot change them yet, because a change mid-cycle has to replan the remaining days.
 - **Proposed fix:** Edit them from the Plan screen in phase 3. A change applies to the remaining days through a replan that is written to the ledger, using the same path as the balance check.
 
@@ -223,7 +223,17 @@ Status values: `open` (waiting on a decision), `planned` (fix agreed or needs no
 - **Proposed fix:** Phase 7 adds a daily background check alongside the notifications. Until then, opening the app catches up immediately.
 
 ### F38. Seed-data tool for demos
-- **Status:** planned (phase 3). **Decision: no.**
+- **Status:** fixed in phase 3 (D44).
 - **Problem:** Section 12 asks for a tool that simulates three months for demos. The engine tests already simulate three months, but there is no way to load that into the app.
 - **Proposed fix:** A debug-only menu item that fills a fresh install with three simulated months, using the acceptance-test spending model. It will never appear in release builds.
+
+### F39. Onboarding deposit counted twice by the balance check
+- **Status:** fixed in phase 3. **Decision: no.**
+- **Problem:** Found by a test. The onboarding deposit was stamped at noon on its date, while the balance anchor was stamped at the moment onboarding finished. When onboarding happened before noon, the first balance check counted the deposit a second time and reported the balance as ₹12,000 too low.
+- **Fix:** A deposit's recorded time is noon on its date, or now if that is earlier (D42). Covered by tests.
+
+### F40. Schema migrations have no test against real old data
+- **Status:** planned (phase 6). **Decision: no.**
+- **Problem:** Phase 3 moves the database to version 2 (supply savings and fuel fills) with a migration. The phone was reinstalled fresh for this phase, so no version 1 database exists there, but later phases will need upgrades that keep data.
+- **Proposed fix:** From phase 6, export the Drift schema for each version and add migration tests that open a database from every earlier version, alongside the backup and restore work.
 

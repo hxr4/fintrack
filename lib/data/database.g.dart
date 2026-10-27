@@ -4110,6 +4110,32 @@ class $SupplyItemsTable extends SupplyItems
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _savedPaiseMeta = const VerificationMeta(
+    'savedPaise',
+  );
+  @override
+  late final GeneratedColumn<int> savedPaise = GeneratedColumn<int>(
+    'saved_paise',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _lastRestockEstimatedMeta =
+      const VerificationMeta('lastRestockEstimated');
+  @override
+  late final GeneratedColumn<bool> lastRestockEstimated = GeneratedColumn<bool>(
+    'last_restock_estimated',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("last_restock_estimated" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -4117,6 +4143,8 @@ class $SupplyItemsTable extends SupplyItems
     pricePaise,
     lifespanDays,
     lastRestock,
+    savedPaise,
+    lastRestockEstimated,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4173,6 +4201,21 @@ class $SupplyItemsTable extends SupplyItems
     } else if (isInserting) {
       context.missing(_lastRestockMeta);
     }
+    if (data.containsKey('saved_paise')) {
+      context.handle(
+        _savedPaiseMeta,
+        savedPaise.isAcceptableOrUnknown(data['saved_paise']!, _savedPaiseMeta),
+      );
+    }
+    if (data.containsKey('last_restock_estimated')) {
+      context.handle(
+        _lastRestockEstimatedMeta,
+        lastRestockEstimated.isAcceptableOrUnknown(
+          data['last_restock_estimated']!,
+          _lastRestockEstimatedMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -4202,6 +4245,14 @@ class $SupplyItemsTable extends SupplyItems
         DriftSqlType.string,
         data['${effectivePrefix}last_restock'],
       )!,
+      savedPaise: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}saved_paise'],
+      )!,
+      lastRestockEstimated: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}last_restock_estimated'],
+      )!,
     );
   }
 
@@ -4217,12 +4268,16 @@ class SupplyItemRow extends DataClass implements Insertable<SupplyItemRow> {
   final int pricePaise;
   final int lifespanDays;
   final String lastRestock;
+  final int savedPaise;
+  final bool lastRestockEstimated;
   const SupplyItemRow({
     required this.id,
     required this.name,
     required this.pricePaise,
     required this.lifespanDays,
     required this.lastRestock,
+    required this.savedPaise,
+    required this.lastRestockEstimated,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4232,6 +4287,8 @@ class SupplyItemRow extends DataClass implements Insertable<SupplyItemRow> {
     map['price_paise'] = Variable<int>(pricePaise);
     map['lifespan_days'] = Variable<int>(lifespanDays);
     map['last_restock'] = Variable<String>(lastRestock);
+    map['saved_paise'] = Variable<int>(savedPaise);
+    map['last_restock_estimated'] = Variable<bool>(lastRestockEstimated);
     return map;
   }
 
@@ -4242,6 +4299,8 @@ class SupplyItemRow extends DataClass implements Insertable<SupplyItemRow> {
       pricePaise: Value(pricePaise),
       lifespanDays: Value(lifespanDays),
       lastRestock: Value(lastRestock),
+      savedPaise: Value(savedPaise),
+      lastRestockEstimated: Value(lastRestockEstimated),
     );
   }
 
@@ -4256,6 +4315,10 @@ class SupplyItemRow extends DataClass implements Insertable<SupplyItemRow> {
       pricePaise: serializer.fromJson<int>(json['pricePaise']),
       lifespanDays: serializer.fromJson<int>(json['lifespanDays']),
       lastRestock: serializer.fromJson<String>(json['lastRestock']),
+      savedPaise: serializer.fromJson<int>(json['savedPaise']),
+      lastRestockEstimated: serializer.fromJson<bool>(
+        json['lastRestockEstimated'],
+      ),
     );
   }
   @override
@@ -4267,6 +4330,8 @@ class SupplyItemRow extends DataClass implements Insertable<SupplyItemRow> {
       'pricePaise': serializer.toJson<int>(pricePaise),
       'lifespanDays': serializer.toJson<int>(lifespanDays),
       'lastRestock': serializer.toJson<String>(lastRestock),
+      'savedPaise': serializer.toJson<int>(savedPaise),
+      'lastRestockEstimated': serializer.toJson<bool>(lastRestockEstimated),
     };
   }
 
@@ -4276,12 +4341,16 @@ class SupplyItemRow extends DataClass implements Insertable<SupplyItemRow> {
     int? pricePaise,
     int? lifespanDays,
     String? lastRestock,
+    int? savedPaise,
+    bool? lastRestockEstimated,
   }) => SupplyItemRow(
     id: id ?? this.id,
     name: name ?? this.name,
     pricePaise: pricePaise ?? this.pricePaise,
     lifespanDays: lifespanDays ?? this.lifespanDays,
     lastRestock: lastRestock ?? this.lastRestock,
+    savedPaise: savedPaise ?? this.savedPaise,
+    lastRestockEstimated: lastRestockEstimated ?? this.lastRestockEstimated,
   );
   SupplyItemRow copyWithCompanion(SupplyItemsCompanion data) {
     return SupplyItemRow(
@@ -4296,6 +4365,12 @@ class SupplyItemRow extends DataClass implements Insertable<SupplyItemRow> {
       lastRestock: data.lastRestock.present
           ? data.lastRestock.value
           : this.lastRestock,
+      savedPaise: data.savedPaise.present
+          ? data.savedPaise.value
+          : this.savedPaise,
+      lastRestockEstimated: data.lastRestockEstimated.present
+          ? data.lastRestockEstimated.value
+          : this.lastRestockEstimated,
     );
   }
 
@@ -4306,14 +4381,23 @@ class SupplyItemRow extends DataClass implements Insertable<SupplyItemRow> {
           ..write('name: $name, ')
           ..write('pricePaise: $pricePaise, ')
           ..write('lifespanDays: $lifespanDays, ')
-          ..write('lastRestock: $lastRestock')
+          ..write('lastRestock: $lastRestock, ')
+          ..write('savedPaise: $savedPaise, ')
+          ..write('lastRestockEstimated: $lastRestockEstimated')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, pricePaise, lifespanDays, lastRestock);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    pricePaise,
+    lifespanDays,
+    lastRestock,
+    savedPaise,
+    lastRestockEstimated,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -4322,7 +4406,9 @@ class SupplyItemRow extends DataClass implements Insertable<SupplyItemRow> {
           other.name == this.name &&
           other.pricePaise == this.pricePaise &&
           other.lifespanDays == this.lifespanDays &&
-          other.lastRestock == this.lastRestock);
+          other.lastRestock == this.lastRestock &&
+          other.savedPaise == this.savedPaise &&
+          other.lastRestockEstimated == this.lastRestockEstimated);
 }
 
 class SupplyItemsCompanion extends UpdateCompanion<SupplyItemRow> {
@@ -4331,6 +4417,8 @@ class SupplyItemsCompanion extends UpdateCompanion<SupplyItemRow> {
   final Value<int> pricePaise;
   final Value<int> lifespanDays;
   final Value<String> lastRestock;
+  final Value<int> savedPaise;
+  final Value<bool> lastRestockEstimated;
   final Value<int> rowid;
   const SupplyItemsCompanion({
     this.id = const Value.absent(),
@@ -4338,6 +4426,8 @@ class SupplyItemsCompanion extends UpdateCompanion<SupplyItemRow> {
     this.pricePaise = const Value.absent(),
     this.lifespanDays = const Value.absent(),
     this.lastRestock = const Value.absent(),
+    this.savedPaise = const Value.absent(),
+    this.lastRestockEstimated = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SupplyItemsCompanion.insert({
@@ -4346,6 +4436,8 @@ class SupplyItemsCompanion extends UpdateCompanion<SupplyItemRow> {
     required int pricePaise,
     required int lifespanDays,
     required String lastRestock,
+    this.savedPaise = const Value.absent(),
+    this.lastRestockEstimated = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -4358,6 +4450,8 @@ class SupplyItemsCompanion extends UpdateCompanion<SupplyItemRow> {
     Expression<int>? pricePaise,
     Expression<int>? lifespanDays,
     Expression<String>? lastRestock,
+    Expression<int>? savedPaise,
+    Expression<bool>? lastRestockEstimated,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -4366,6 +4460,9 @@ class SupplyItemsCompanion extends UpdateCompanion<SupplyItemRow> {
       if (pricePaise != null) 'price_paise': pricePaise,
       if (lifespanDays != null) 'lifespan_days': lifespanDays,
       if (lastRestock != null) 'last_restock': lastRestock,
+      if (savedPaise != null) 'saved_paise': savedPaise,
+      if (lastRestockEstimated != null)
+        'last_restock_estimated': lastRestockEstimated,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -4376,6 +4473,8 @@ class SupplyItemsCompanion extends UpdateCompanion<SupplyItemRow> {
     Value<int>? pricePaise,
     Value<int>? lifespanDays,
     Value<String>? lastRestock,
+    Value<int>? savedPaise,
+    Value<bool>? lastRestockEstimated,
     Value<int>? rowid,
   }) {
     return SupplyItemsCompanion(
@@ -4384,6 +4483,8 @@ class SupplyItemsCompanion extends UpdateCompanion<SupplyItemRow> {
       pricePaise: pricePaise ?? this.pricePaise,
       lifespanDays: lifespanDays ?? this.lifespanDays,
       lastRestock: lastRestock ?? this.lastRestock,
+      savedPaise: savedPaise ?? this.savedPaise,
+      lastRestockEstimated: lastRestockEstimated ?? this.lastRestockEstimated,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4406,6 +4507,14 @@ class SupplyItemsCompanion extends UpdateCompanion<SupplyItemRow> {
     if (lastRestock.present) {
       map['last_restock'] = Variable<String>(lastRestock.value);
     }
+    if (savedPaise.present) {
+      map['saved_paise'] = Variable<int>(savedPaise.value);
+    }
+    if (lastRestockEstimated.present) {
+      map['last_restock_estimated'] = Variable<bool>(
+        lastRestockEstimated.value,
+      );
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -4420,6 +4529,541 @@ class SupplyItemsCompanion extends UpdateCompanion<SupplyItemRow> {
           ..write('pricePaise: $pricePaise, ')
           ..write('lifespanDays: $lifespanDays, ')
           ..write('lastRestock: $lastRestock, ')
+          ..write('savedPaise: $savedPaise, ')
+          ..write('lastRestockEstimated: $lastRestockEstimated, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $FuelFillsTable extends FuelFills
+    with TableInfo<$FuelFillsTable, FuelFillRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FuelFillsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cycleIdMeta = const VerificationMeta(
+    'cycleId',
+  );
+  @override
+  late final GeneratedColumn<int> cycleId = GeneratedColumn<int>(
+    'cycle_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES cycles (id)',
+    ),
+  );
+  static const VerificationMeta _transactionIdMeta = const VerificationMeta(
+    'transactionId',
+  );
+  @override
+  late final GeneratedColumn<String> transactionId = GeneratedColumn<String>(
+    'transaction_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<String> date = GeneratedColumn<String>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _amountPaiseMeta = const VerificationMeta(
+    'amountPaise',
+  );
+  @override
+  late final GeneratedColumn<int> amountPaise = GeneratedColumn<int>(
+    'amount_paise',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pricePerLitrePaiseMeta =
+      const VerificationMeta('pricePerLitrePaise');
+  @override
+  late final GeneratedColumn<int> pricePerLitrePaise = GeneratedColumn<int>(
+    'price_per_litre_paise',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _odometerKmMeta = const VerificationMeta(
+    'odometerKm',
+  );
+  @override
+  late final GeneratedColumn<int> odometerKm = GeneratedColumn<int>(
+    'odometer_km',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fullTankMeta = const VerificationMeta(
+    'fullTank',
+  );
+  @override
+  late final GeneratedColumn<bool> fullTank = GeneratedColumn<bool>(
+    'full_tank',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("full_tank" IN (0, 1))',
+    ),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    cycleId,
+    transactionId,
+    date,
+    amountPaise,
+    pricePerLitrePaise,
+    odometerKm,
+    fullTank,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'fuel_fills';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<FuelFillRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('cycle_id')) {
+      context.handle(
+        _cycleIdMeta,
+        cycleId.isAcceptableOrUnknown(data['cycle_id']!, _cycleIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cycleIdMeta);
+    }
+    if (data.containsKey('transaction_id')) {
+      context.handle(
+        _transactionIdMeta,
+        transactionId.isAcceptableOrUnknown(
+          data['transaction_id']!,
+          _transactionIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_transactionIdMeta);
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('amount_paise')) {
+      context.handle(
+        _amountPaiseMeta,
+        amountPaise.isAcceptableOrUnknown(
+          data['amount_paise']!,
+          _amountPaiseMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_amountPaiseMeta);
+    }
+    if (data.containsKey('price_per_litre_paise')) {
+      context.handle(
+        _pricePerLitrePaiseMeta,
+        pricePerLitrePaise.isAcceptableOrUnknown(
+          data['price_per_litre_paise']!,
+          _pricePerLitrePaiseMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_pricePerLitrePaiseMeta);
+    }
+    if (data.containsKey('odometer_km')) {
+      context.handle(
+        _odometerKmMeta,
+        odometerKm.isAcceptableOrUnknown(data['odometer_km']!, _odometerKmMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_odometerKmMeta);
+    }
+    if (data.containsKey('full_tank')) {
+      context.handle(
+        _fullTankMeta,
+        fullTank.isAcceptableOrUnknown(data['full_tank']!, _fullTankMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fullTankMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  FuelFillRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FuelFillRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      cycleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}cycle_id'],
+      )!,
+      transactionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}transaction_id'],
+      )!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}date'],
+      )!,
+      amountPaise: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount_paise'],
+      )!,
+      pricePerLitrePaise: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}price_per_litre_paise'],
+      )!,
+      odometerKm: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}odometer_km'],
+      )!,
+      fullTank: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}full_tank'],
+      )!,
+    );
+  }
+
+  @override
+  $FuelFillsTable createAlias(String alias) {
+    return $FuelFillsTable(attachedDatabase, alias);
+  }
+}
+
+class FuelFillRow extends DataClass implements Insertable<FuelFillRow> {
+  final String id;
+  final int cycleId;
+  final String transactionId;
+  final String date;
+  final int amountPaise;
+  final int pricePerLitrePaise;
+  final int odometerKm;
+  final bool fullTank;
+  const FuelFillRow({
+    required this.id,
+    required this.cycleId,
+    required this.transactionId,
+    required this.date,
+    required this.amountPaise,
+    required this.pricePerLitrePaise,
+    required this.odometerKm,
+    required this.fullTank,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['cycle_id'] = Variable<int>(cycleId);
+    map['transaction_id'] = Variable<String>(transactionId);
+    map['date'] = Variable<String>(date);
+    map['amount_paise'] = Variable<int>(amountPaise);
+    map['price_per_litre_paise'] = Variable<int>(pricePerLitrePaise);
+    map['odometer_km'] = Variable<int>(odometerKm);
+    map['full_tank'] = Variable<bool>(fullTank);
+    return map;
+  }
+
+  FuelFillsCompanion toCompanion(bool nullToAbsent) {
+    return FuelFillsCompanion(
+      id: Value(id),
+      cycleId: Value(cycleId),
+      transactionId: Value(transactionId),
+      date: Value(date),
+      amountPaise: Value(amountPaise),
+      pricePerLitrePaise: Value(pricePerLitrePaise),
+      odometerKm: Value(odometerKm),
+      fullTank: Value(fullTank),
+    );
+  }
+
+  factory FuelFillRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FuelFillRow(
+      id: serializer.fromJson<String>(json['id']),
+      cycleId: serializer.fromJson<int>(json['cycleId']),
+      transactionId: serializer.fromJson<String>(json['transactionId']),
+      date: serializer.fromJson<String>(json['date']),
+      amountPaise: serializer.fromJson<int>(json['amountPaise']),
+      pricePerLitrePaise: serializer.fromJson<int>(json['pricePerLitrePaise']),
+      odometerKm: serializer.fromJson<int>(json['odometerKm']),
+      fullTank: serializer.fromJson<bool>(json['fullTank']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'cycleId': serializer.toJson<int>(cycleId),
+      'transactionId': serializer.toJson<String>(transactionId),
+      'date': serializer.toJson<String>(date),
+      'amountPaise': serializer.toJson<int>(amountPaise),
+      'pricePerLitrePaise': serializer.toJson<int>(pricePerLitrePaise),
+      'odometerKm': serializer.toJson<int>(odometerKm),
+      'fullTank': serializer.toJson<bool>(fullTank),
+    };
+  }
+
+  FuelFillRow copyWith({
+    String? id,
+    int? cycleId,
+    String? transactionId,
+    String? date,
+    int? amountPaise,
+    int? pricePerLitrePaise,
+    int? odometerKm,
+    bool? fullTank,
+  }) => FuelFillRow(
+    id: id ?? this.id,
+    cycleId: cycleId ?? this.cycleId,
+    transactionId: transactionId ?? this.transactionId,
+    date: date ?? this.date,
+    amountPaise: amountPaise ?? this.amountPaise,
+    pricePerLitrePaise: pricePerLitrePaise ?? this.pricePerLitrePaise,
+    odometerKm: odometerKm ?? this.odometerKm,
+    fullTank: fullTank ?? this.fullTank,
+  );
+  FuelFillRow copyWithCompanion(FuelFillsCompanion data) {
+    return FuelFillRow(
+      id: data.id.present ? data.id.value : this.id,
+      cycleId: data.cycleId.present ? data.cycleId.value : this.cycleId,
+      transactionId: data.transactionId.present
+          ? data.transactionId.value
+          : this.transactionId,
+      date: data.date.present ? data.date.value : this.date,
+      amountPaise: data.amountPaise.present
+          ? data.amountPaise.value
+          : this.amountPaise,
+      pricePerLitrePaise: data.pricePerLitrePaise.present
+          ? data.pricePerLitrePaise.value
+          : this.pricePerLitrePaise,
+      odometerKm: data.odometerKm.present
+          ? data.odometerKm.value
+          : this.odometerKm,
+      fullTank: data.fullTank.present ? data.fullTank.value : this.fullTank,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FuelFillRow(')
+          ..write('id: $id, ')
+          ..write('cycleId: $cycleId, ')
+          ..write('transactionId: $transactionId, ')
+          ..write('date: $date, ')
+          ..write('amountPaise: $amountPaise, ')
+          ..write('pricePerLitrePaise: $pricePerLitrePaise, ')
+          ..write('odometerKm: $odometerKm, ')
+          ..write('fullTank: $fullTank')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    cycleId,
+    transactionId,
+    date,
+    amountPaise,
+    pricePerLitrePaise,
+    odometerKm,
+    fullTank,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FuelFillRow &&
+          other.id == this.id &&
+          other.cycleId == this.cycleId &&
+          other.transactionId == this.transactionId &&
+          other.date == this.date &&
+          other.amountPaise == this.amountPaise &&
+          other.pricePerLitrePaise == this.pricePerLitrePaise &&
+          other.odometerKm == this.odometerKm &&
+          other.fullTank == this.fullTank);
+}
+
+class FuelFillsCompanion extends UpdateCompanion<FuelFillRow> {
+  final Value<String> id;
+  final Value<int> cycleId;
+  final Value<String> transactionId;
+  final Value<String> date;
+  final Value<int> amountPaise;
+  final Value<int> pricePerLitrePaise;
+  final Value<int> odometerKm;
+  final Value<bool> fullTank;
+  final Value<int> rowid;
+  const FuelFillsCompanion({
+    this.id = const Value.absent(),
+    this.cycleId = const Value.absent(),
+    this.transactionId = const Value.absent(),
+    this.date = const Value.absent(),
+    this.amountPaise = const Value.absent(),
+    this.pricePerLitrePaise = const Value.absent(),
+    this.odometerKm = const Value.absent(),
+    this.fullTank = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FuelFillsCompanion.insert({
+    required String id,
+    required int cycleId,
+    required String transactionId,
+    required String date,
+    required int amountPaise,
+    required int pricePerLitrePaise,
+    required int odometerKm,
+    required bool fullTank,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       cycleId = Value(cycleId),
+       transactionId = Value(transactionId),
+       date = Value(date),
+       amountPaise = Value(amountPaise),
+       pricePerLitrePaise = Value(pricePerLitrePaise),
+       odometerKm = Value(odometerKm),
+       fullTank = Value(fullTank);
+  static Insertable<FuelFillRow> custom({
+    Expression<String>? id,
+    Expression<int>? cycleId,
+    Expression<String>? transactionId,
+    Expression<String>? date,
+    Expression<int>? amountPaise,
+    Expression<int>? pricePerLitrePaise,
+    Expression<int>? odometerKm,
+    Expression<bool>? fullTank,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (cycleId != null) 'cycle_id': cycleId,
+      if (transactionId != null) 'transaction_id': transactionId,
+      if (date != null) 'date': date,
+      if (amountPaise != null) 'amount_paise': amountPaise,
+      if (pricePerLitrePaise != null)
+        'price_per_litre_paise': pricePerLitrePaise,
+      if (odometerKm != null) 'odometer_km': odometerKm,
+      if (fullTank != null) 'full_tank': fullTank,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FuelFillsCompanion copyWith({
+    Value<String>? id,
+    Value<int>? cycleId,
+    Value<String>? transactionId,
+    Value<String>? date,
+    Value<int>? amountPaise,
+    Value<int>? pricePerLitrePaise,
+    Value<int>? odometerKm,
+    Value<bool>? fullTank,
+    Value<int>? rowid,
+  }) {
+    return FuelFillsCompanion(
+      id: id ?? this.id,
+      cycleId: cycleId ?? this.cycleId,
+      transactionId: transactionId ?? this.transactionId,
+      date: date ?? this.date,
+      amountPaise: amountPaise ?? this.amountPaise,
+      pricePerLitrePaise: pricePerLitrePaise ?? this.pricePerLitrePaise,
+      odometerKm: odometerKm ?? this.odometerKm,
+      fullTank: fullTank ?? this.fullTank,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (cycleId.present) {
+      map['cycle_id'] = Variable<int>(cycleId.value);
+    }
+    if (transactionId.present) {
+      map['transaction_id'] = Variable<String>(transactionId.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<String>(date.value);
+    }
+    if (amountPaise.present) {
+      map['amount_paise'] = Variable<int>(amountPaise.value);
+    }
+    if (pricePerLitrePaise.present) {
+      map['price_per_litre_paise'] = Variable<int>(pricePerLitrePaise.value);
+    }
+    if (odometerKm.present) {
+      map['odometer_km'] = Variable<int>(odometerKm.value);
+    }
+    if (fullTank.present) {
+      map['full_tank'] = Variable<bool>(fullTank.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FuelFillsCompanion(')
+          ..write('id: $id, ')
+          ..write('cycleId: $cycleId, ')
+          ..write('transactionId: $transactionId, ')
+          ..write('date: $date, ')
+          ..write('amountPaise: $amountPaise, ')
+          ..write('pricePerLitrePaise: $pricePerLitrePaise, ')
+          ..write('odometerKm: $odometerKm, ')
+          ..write('fullTank: $fullTank, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -5542,6 +6186,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $HoldsTable holds = $HoldsTable(this);
   late final $BatchesTable batches = $BatchesTable(this);
   late final $SupplyItemsTable supplyItems = $SupplyItemsTable(this);
+  late final $FuelFillsTable fuelFills = $FuelFillsTable(this);
   late final $RecurringCostsTable recurringCosts = $RecurringCostsTable(this);
   late final $BalanceAnchorsTable balanceAnchors = $BalanceAnchorsTable(this);
   late final $KeywordMappingsTable keywordMappings = $KeywordMappingsTable(
@@ -5562,6 +6207,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     holds,
     batches,
     supplyItems,
+    fuelFills,
     recurringCosts,
     balanceAnchors,
     keywordMappings,
@@ -5850,6 +6496,24 @@ final class $$CyclesTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$FuelFillsTable, List<FuelFillRow>>
+  _fuelFillsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.fuelFills,
+    aliasName: 'cycles__id__fuel_fills__cycle_id',
+  );
+
+  $$FuelFillsTableProcessedTableManager get fuelFillsRefs {
+    final manager = $$FuelFillsTableTableManager(
+      $_db,
+      $_db.fuelFills,
+    ).filter((f) => f.cycleId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_fuelFillsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$CyclesTableFilterComposer
@@ -6067,6 +6731,31 @@ class $$CyclesTableFilterComposer
           }) => $$BatchesTableFilterComposer(
             $db: $db,
             $table: $db.batches,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> fuelFillsRefs(
+    Expression<bool> Function($$FuelFillsTableFilterComposer f) f,
+  ) {
+    final $$FuelFillsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.fuelFills,
+      getReferencedColumn: (t) => t.cycleId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FuelFillsTableFilterComposer(
+            $db: $db,
+            $table: $db.fuelFills,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -6367,6 +7056,31 @@ class $$CyclesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> fuelFillsRefs<T extends Object>(
+    Expression<T> Function($$FuelFillsTableAnnotationComposer a) f,
+  ) {
+    final $$FuelFillsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.fuelFills,
+      getReferencedColumn: (t) => t.cycleId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FuelFillsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.fuelFills,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$CyclesTableTableManager
@@ -6389,6 +7103,7 @@ class $$CyclesTableTableManager
             bool adjustmentsRefs,
             bool holdsRefs,
             bool batchesRefs,
+            bool fuelFillsRefs,
           })
         > {
   $$CyclesTableTableManager(_$AppDatabase db, $CyclesTable table)
@@ -6478,6 +7193,7 @@ class $$CyclesTableTableManager
                 adjustmentsRefs = false,
                 holdsRefs = false,
                 batchesRefs = false,
+                fuelFillsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -6488,6 +7204,7 @@ class $$CyclesTableTableManager
                     if (adjustmentsRefs) db.adjustments,
                     if (holdsRefs) db.holds,
                     if (batchesRefs) db.batches,
+                    if (fuelFillsRefs) db.fuelFills,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -6608,6 +7325,26 @@ class $$CyclesTableTableManager
                           referencedColumn: 'cycle_id',
                           typedResults: items,
                         ),
+                      if (fuelFillsRefs)
+                        await $_getPrefetchedDataByColumns<
+                          CycleRow,
+                          $CyclesTable,
+                          FuelFillRow,
+                          $FuelFillsTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CyclesTableReferences
+                              ._fuelFillsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CyclesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).fuelFillsRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'cycle_id',
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -6635,6 +7372,7 @@ typedef $$CyclesTableProcessedTableManager =
         bool adjustmentsRefs,
         bool holdsRefs,
         bool batchesRefs,
+        bool fuelFillsRefs,
       })
     >;
 typedef $$AllocationsTableCreateCompanionBuilder =
@@ -8872,6 +9610,8 @@ typedef $$SupplyItemsTableCreateCompanionBuilder =
       required int pricePaise,
       required int lifespanDays,
       required String lastRestock,
+      Value<int> savedPaise,
+      Value<bool> lastRestockEstimated,
       Value<int> rowid,
     });
 typedef $$SupplyItemsTableUpdateCompanionBuilder =
@@ -8881,6 +9621,8 @@ typedef $$SupplyItemsTableUpdateCompanionBuilder =
       Value<int> pricePaise,
       Value<int> lifespanDays,
       Value<String> lastRestock,
+      Value<int> savedPaise,
+      Value<bool> lastRestockEstimated,
       Value<int> rowid,
     });
 
@@ -8915,6 +9657,16 @@ class $$SupplyItemsTableFilterComposer
 
   ColumnFilters<String> get lastRestock => $composableBuilder(
     column: $table.lastRestock,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get savedPaise => $composableBuilder(
+    column: $table.savedPaise,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get lastRestockEstimated => $composableBuilder(
+    column: $table.lastRestockEstimated,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -8952,6 +9704,16 @@ class $$SupplyItemsTableOrderingComposer
     column: $table.lastRestock,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get savedPaise => $composableBuilder(
+    column: $table.savedPaise,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get lastRestockEstimated => $composableBuilder(
+    column: $table.lastRestockEstimated,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SupplyItemsTableAnnotationComposer
@@ -8981,6 +9743,16 @@ class $$SupplyItemsTableAnnotationComposer
 
   GeneratedColumn<String> get lastRestock => $composableBuilder(
     column: $table.lastRestock,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get savedPaise => $composableBuilder(
+    column: $table.savedPaise,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get lastRestockEstimated => $composableBuilder(
+    column: $table.lastRestockEstimated,
     builder: (column) => column,
   );
 }
@@ -9021,6 +9793,8 @@ class $$SupplyItemsTableTableManager
                 Value<int> pricePaise = const Value.absent(),
                 Value<int> lifespanDays = const Value.absent(),
                 Value<String> lastRestock = const Value.absent(),
+                Value<int> savedPaise = const Value.absent(),
+                Value<bool> lastRestockEstimated = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SupplyItemsCompanion(
                 id: id,
@@ -9028,6 +9802,8 @@ class $$SupplyItemsTableTableManager
                 pricePaise: pricePaise,
                 lifespanDays: lifespanDays,
                 lastRestock: lastRestock,
+                savedPaise: savedPaise,
+                lastRestockEstimated: lastRestockEstimated,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -9037,6 +9813,8 @@ class $$SupplyItemsTableTableManager
                 required int pricePaise,
                 required int lifespanDays,
                 required String lastRestock,
+                Value<int> savedPaise = const Value.absent(),
+                Value<bool> lastRestockEstimated = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SupplyItemsCompanion.insert(
                 id: id,
@@ -9044,6 +9822,8 @@ class $$SupplyItemsTableTableManager
                 pricePaise: pricePaise,
                 lifespanDays: lifespanDays,
                 lastRestock: lastRestock,
+                savedPaise: savedPaise,
+                lastRestockEstimated: lastRestockEstimated,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -9079,6 +9859,384 @@ typedef $$SupplyItemsTableProcessedTableManager =
       ),
       SupplyItemRow,
       PrefetchHooks Function()
+    >;
+typedef $$FuelFillsTableCreateCompanionBuilder = FuelFillsCompanion Function({
+  required String id,
+  required int cycleId,
+  required String transactionId,
+  required String date,
+  required int amountPaise,
+  required int pricePerLitrePaise,
+  required int odometerKm,
+  required bool fullTank,
+  Value<int> rowid,
+});
+typedef $$FuelFillsTableUpdateCompanionBuilder = FuelFillsCompanion Function({
+  Value<String> id,
+  Value<int> cycleId,
+  Value<String> transactionId,
+  Value<String> date,
+  Value<int> amountPaise,
+  Value<int> pricePerLitrePaise,
+  Value<int> odometerKm,
+  Value<bool> fullTank,
+  Value<int> rowid,
+});
+
+final class $$FuelFillsTableReferences
+    extends BaseReferences<_$AppDatabase, $FuelFillsTable, FuelFillRow> {
+  $$FuelFillsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $CyclesTable _cycleIdTable(_$AppDatabase db) =>
+      db.cycles.createAlias('fuel_fills__cycle_id__cycles__id');
+
+  $$CyclesTableProcessedTableManager get cycleId {
+    final $_column = $_itemColumn<int>('cycle_id')!;
+
+    final manager = $$CyclesTableTableManager(
+      $_db,
+      $_db.cycles,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_cycleIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$FuelFillsTableFilterComposer
+    extends Composer<_$AppDatabase, $FuelFillsTable> {
+  $$FuelFillsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get transactionId => $composableBuilder(
+    column: $table.transactionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amountPaise => $composableBuilder(
+    column: $table.amountPaise,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pricePerLitrePaise => $composableBuilder(
+    column: $table.pricePerLitrePaise,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get odometerKm => $composableBuilder(
+    column: $table.odometerKm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get fullTank => $composableBuilder(
+    column: $table.fullTank,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$CyclesTableFilterComposer get cycleId {
+    final $$CyclesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.cycleId,
+      referencedTable: $db.cycles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CyclesTableFilterComposer(
+            $db: $db,
+            $table: $db.cycles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FuelFillsTableOrderingComposer
+    extends Composer<_$AppDatabase, $FuelFillsTable> {
+  $$FuelFillsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get transactionId => $composableBuilder(
+    column: $table.transactionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amountPaise => $composableBuilder(
+    column: $table.amountPaise,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pricePerLitrePaise => $composableBuilder(
+    column: $table.pricePerLitrePaise,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get odometerKm => $composableBuilder(
+    column: $table.odometerKm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get fullTank => $composableBuilder(
+    column: $table.fullTank,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$CyclesTableOrderingComposer get cycleId {
+    final $$CyclesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.cycleId,
+      referencedTable: $db.cycles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CyclesTableOrderingComposer(
+            $db: $db,
+            $table: $db.cycles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FuelFillsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FuelFillsTable> {
+  $$FuelFillsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get transactionId => $composableBuilder(
+    column: $table.transactionId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<int> get amountPaise => $composableBuilder(
+    column: $table.amountPaise,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get pricePerLitrePaise => $composableBuilder(
+    column: $table.pricePerLitrePaise,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get odometerKm => $composableBuilder(
+    column: $table.odometerKm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get fullTank =>
+      $composableBuilder(column: $table.fullTank, builder: (column) => column);
+
+  $$CyclesTableAnnotationComposer get cycleId {
+    final $$CyclesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.cycleId,
+      referencedTable: $db.cycles,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CyclesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.cycles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FuelFillsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $FuelFillsTable,
+          FuelFillRow,
+          $$FuelFillsTableFilterComposer,
+          $$FuelFillsTableOrderingComposer,
+          $$FuelFillsTableAnnotationComposer,
+          $$FuelFillsTableCreateCompanionBuilder,
+          $$FuelFillsTableUpdateCompanionBuilder,
+          (FuelFillRow, $$FuelFillsTableReferences),
+          FuelFillRow,
+          PrefetchHooks Function({bool cycleId})
+        > {
+  $$FuelFillsTableTableManager(_$AppDatabase db, $FuelFillsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FuelFillsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FuelFillsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FuelFillsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<int> cycleId = const Value.absent(),
+                Value<String> transactionId = const Value.absent(),
+                Value<String> date = const Value.absent(),
+                Value<int> amountPaise = const Value.absent(),
+                Value<int> pricePerLitrePaise = const Value.absent(),
+                Value<int> odometerKm = const Value.absent(),
+                Value<bool> fullTank = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FuelFillsCompanion(
+                id: id,
+                cycleId: cycleId,
+                transactionId: transactionId,
+                date: date,
+                amountPaise: amountPaise,
+                pricePerLitrePaise: pricePerLitrePaise,
+                odometerKm: odometerKm,
+                fullTank: fullTank,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required int cycleId,
+                required String transactionId,
+                required String date,
+                required int amountPaise,
+                required int pricePerLitrePaise,
+                required int odometerKm,
+                required bool fullTank,
+                Value<int> rowid = const Value.absent(),
+              }) => FuelFillsCompanion.insert(
+                id: id,
+                cycleId: cycleId,
+                transactionId: transactionId,
+                date: date,
+                amountPaise: amountPaise,
+                pricePerLitrePaise: pricePerLitrePaise,
+                odometerKm: odometerKm,
+                fullTank: fullTank,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$FuelFillsTable, FuelFillRow>(table),
+                  $$FuelFillsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({cycleId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (cycleId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.cycleId,
+                        referencedTable: $$FuelFillsTableReferences
+                            ._cycleIdTable(db),
+                        referencedColumn: $$FuelFillsTableReferences
+                            ._cycleIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$FuelFillsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FuelFillsTable,
+      FuelFillRow,
+      $$FuelFillsTableFilterComposer,
+      $$FuelFillsTableOrderingComposer,
+      $$FuelFillsTableAnnotationComposer,
+      $$FuelFillsTableCreateCompanionBuilder,
+      $$FuelFillsTableUpdateCompanionBuilder,
+      (FuelFillRow, $$FuelFillsTableReferences),
+      FuelFillRow,
+      PrefetchHooks Function({bool cycleId})
     >;
 typedef $$RecurringCostsTableCreateCompanionBuilder =
     RecurringCostsCompanion Function({
@@ -9816,6 +10974,8 @@ class $AppDatabaseManager {
       $$BatchesTableTableManager(_db, _db.batches);
   $$SupplyItemsTableTableManager get supplyItems =>
       $$SupplyItemsTableTableManager(_db, _db.supplyItems);
+  $$FuelFillsTableTableManager get fuelFills =>
+      $$FuelFillsTableTableManager(_db, _db.fuelFills);
   $$RecurringCostsTableTableManager get recurringCosts =>
       $$RecurringCostsTableTableManager(_db, _db.recurringCosts);
   $$BalanceAnchorsTableTableManager get balanceAnchors =>

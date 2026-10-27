@@ -171,3 +171,29 @@ Onboarding records bank balance, cash in hand and the excluded amount as the fir
 ### D36. Release signing and installs
 The release keystore is at `~/.fintrack/keys/fintrack-release.jks`, outside the repository. `android/key.properties` points to it, and a backup copy of that file sits next to the keystore. Both are git-ignored. Release builds refuse to build without it instead of falling back to the debug key, because a signature change forces an uninstall, which wipes data. The version code goes up every phase. Installs use `adb install -r`, which keeps app data. A debug build must never be installed over the release build.
 
+## Phase 3 decisions
+
+### D37. Repository author
+This repository's git `user.email` is `hxr4@users.noreply.github.com` for all commits from Phase 2 onward. Earlier commits keep the old address; history was not rewritten.
+
+### D38. One service for every ledger change
+`LedgerActions` (`lib/data/ledger_actions.dart`) holds every change to the ledger: logging, auto-adjust, undo, deposits, restocks, fuel, service, recurring payments, the balance check and budget value edits. The Riverpod controller and the demo seeder both call it, so there is one code path to test.
+
+### D39. Supplies (F14)
+Each item keeps its own savings. A cycle's set-aside for an item is the larger of the steady rate and the catch-up needed to reach the price by the expected restock date, capped at what is still to save. An item due inside the cycle gets everything still to save. A restock logs an Essentials stock spend with the item name as the note, updates the price to what was paid, resets the date and uses up the savings. The lifespan learns with a moving average (40 percent new observation). Dates entered in onboarding count as guesses, so the first restock after onboarding does not teach the lifespan. Adding, editing or removing items changes set-asides from the next cycle.
+
+### D40. Fuel and bike (F15, 5.10)
+A fuel fill takes the amount paid, price per litre, odometer and a full-tank flag. Litres are derived in whole millilitres. The fill also logs the Petrol spend, so it is never entered twice, and deleting that spend removes the fill (Undo restores both). Mileage is full-to-full and includes partial fills. The petrol suggestion uses cost per km from the last three full-to-full segments and km per day from the last 30 days of fills. It is shown next to the petrol floor and never applied automatically. Service is due by distance or by months, whichever comes first, and distance is turned into days using the recent riding rate. The Bike fund set-aside catches up to the usual service cost by the due date, with 180 days assumed when no due date is known. Insurance and PUC expiry dates are stored and shown with days left; reminders come in phase 7 (F16).
+
+### D41. Paying from reserve funds
+Recording a service, a recurring payment or a restock spends from Bike fund, Recurring fund or Essentials stock. If the fund goes negative, the gap is covered from Buffer straight away, as a recorded move (`fundCover`). If Buffer cannot cover it, the fund stays negative and shows as such.
+
+### D42. Balance check
+The check compares bank plus cash minus the excluded amount with the last anchor plus deposits minus spends since then. A deposit's recorded time is noon on its date, or now if that is earlier, so a deposit logged at onboarding is never counted twice. After a correction, auto-adjust runs, the usual daily amount is recomputed from the true pool, and the reported figures become the new anchor. "Leave it as it is" records nothing.
+
+### D43. Editing budget values (F36)
+Food floor applies straight away, through the auto-adjust targets. Petrol floor applies straight away to this cycle, prorated. A new deposit day moves this cycle's expected end if the new date is still ahead. The split and night food stock apply from the next cycle. A full mid-cycle reallocation was not built, because it would move money the user has already planned around.
+
+### D44. Demo data (F38)
+Debug builds show "Load three demo months" on the onboarding welcome page. It drives the same `LedgerActions` through three cycles (₹11,000, ₹12,000, then ₹13,000 arriving late), with fuel fills, supplies, a subscription and a bike service plan. Release builds never show it.
+

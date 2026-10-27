@@ -90,6 +90,7 @@ abstract final class CyclePlanning {
     required CycleHistory history,
     Map<BudgetCategory, Money> opening = const {},
     Money carryInToPool = Money.zero,
+    Money bikeFundIncrement = Money.zero,
   }) {
     if (!deposit.isInstallment) {
       throw ArgumentError.value(deposit.kind, 'deposit', 'a cycle starts with an installment');
@@ -108,6 +109,7 @@ abstract final class CyclePlanning {
         nightFoodCarried: opening[BudgetCategory.nightFoodStock] ?? Money.zero,
         supplies: ReserveCalculator.supplyReserves(supplies, window),
         recurringIncrement: ReserveCalculator.recurringIncrement(recurring),
+        bikeFundIncrement: bikeFundIncrement,
       ),
     ));
     return NewCyclePlan(plan: plan, opening: opening, deposit: deposit);

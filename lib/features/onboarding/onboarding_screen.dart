@@ -1,4 +1,5 @@
 import 'package:budget_engine/budget_engine.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,6 +8,7 @@ import '../../app/strings.dart';
 import '../../app/theme.dart';
 import '../../domain/cycle_planning.dart';
 import '../../domain/rupees.dart';
+import '../common/item_dialogs.dart';
 import '../common/widgets.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -201,7 +203,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  List<Widget> _welcome() => [_title(S.onboardingWelcomeTitle, S.onboardingWelcomeBody)];
+  List<Widget> _welcome() => [
+        _title(S.onboardingWelcomeTitle, S.onboardingWelcomeBody),
+        if (kDebugMode) ...[
+          const SizedBox(height: 24),
+          OutlinedButton(
+            key: const Key('load-demo'),
+            onPressed: _saving
+                ? null
+                : () async {
+                    setState(() => _saving = true);
+                    await ref.read(budgetProvider.notifier).loadDemo();
+                    ref.read(lockProvider.notifier).unlock();
+                  },
+            child: const Text(S.demoData),
+          ),
+          Text(S.demoDataHint, style: TextStyle(color: context.palette.mutedText)),
+        ],
+      ];
 
   List<Widget> _depositStep() => [
         _title(S.depositTitle),
@@ -328,176 +347,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       ];
 
   Future<void> _addRecurring() async {
-    final result = await showDialog<RecurringDraft>(context: context, builder: (_) => const _RecurringDialog());
+    final result = await showDialog<RecurringDraft>(context: context, builder: (_) => const RecurringDialog());
     if (result != null) {
       setState(() => _recurring.add(result));
     }
   }
 
   Future<void> _addSupply() async {
-    final result = await showDialog<SupplyDraft>(context: context, builder: (_) => _SupplyDialog(today: _today));
+    final result = await showDialog<SupplyDraft>(context: context, builder: (_) => SupplyDialog(today: _today));
     if (result != null) {
       setState(() => _supplies.add(result));
     }
-  }
-}
-
-class _RecurringDialog extends StatefulWidget {
-  const _RecurringDialog();
-
-  @override
-  State<_RecurringDialog> createState() => _RecurringDialogState();
-}
-
-class _RecurringDialogState extends State<_RecurringDialog> {
-  final _form = GlobalKey<FormState>();
-  final _name = TextEditingController();
-  final _amount = TextEditingController();
-  final _months = TextEditingController(text: '1');
-
-  @override
-  void dispose() {
-    _name.dispose();
-    _amount.dispose();
-    _months.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text(S.addRecurring),
-      content: Form(
-        key: _form,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              controller: _name,
-              decoration: const InputDecoration(labelText: S.name),
-              validator: (value) => (value ?? '').trim().isEmpty ? S.required : null,
-            ),
-            TextFormField(
-              controller: _amount,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(labelText: S.amount, prefixText: '₹ '),
-              validator: (value) => (Rupees.parse(value ?? '')?.isPositive ?? false) ? null : S.invalidAmount,
-            ),
-            TextFormField(
-              controller: _months,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: S.everyMonths),
-              validator: (value) => (int.tryParse(value ?? '') ?? 0) >= 1 ? null : S.invalidNumber,
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text(S.cancel)),
-        FilledButton(
-          onPressed: () {
-            if (_form.currentState!.validate()) {
-              Navigator.of(context).pop(RecurringDraft(
-                name: _name.text.trim(),
-                amount: Rupees.parse(_amount.text)!,
-                everyMonths: int.parse(_months.text),
-              ));
-            }
-          },
-          child: const Text(S.add),
-        ),
-      ],
-    );
-  }
-}
-
-class _SupplyDialog extends StatefulWidget {
-  const _SupplyDialog({required this.today});
-
-  final CivilDate today;
-
-  @override
-  State<_SupplyDialog> createState() => _SupplyDialogState();
-}
-
-class _SupplyDialogState extends State<_SupplyDialog> {
-  final _form = GlobalKey<FormState>();
-  final _name = TextEditingController();
-  final _price = TextEditingController();
-  final _days = TextEditingController(text: '30');
-  late CivilDate _lastRestock = widget.today;
-
-  @override
-  void dispose() {
-    _name.dispose();
-    _price.dispose();
-    _days.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text(S.addSupply),
-      content: Form(
-        key: _form,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              controller: _name,
-              decoration: const InputDecoration(labelText: S.name),
-              validator: (value) => (value ?? '').trim().isEmpty ? S.required : null,
-            ),
-            TextFormField(
-              controller: _price,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(labelText: S.price, prefixText: '₹ '),
-              validator: (value) => (Rupees.parse(value ?? '')?.isPositive ?? false) ? null : S.invalidAmount,
-            ),
-            TextFormField(
-              controller: _days,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: S.lifespanDays),
-              validator: (value) => (int.tryParse(value ?? '') ?? 0) >= 1 ? null : S.invalidNumber,
-            ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text(S.lastRestock),
-              subtitle: Text(formatDate(_lastRestock)),
-              trailing: const Icon(Icons.calendar_today_outlined),
-              onTap: () async {
-                final today = widget.today;
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime(_lastRestock.year, _lastRestock.month, _lastRestock.day),
-                  firstDate: DateTime(today.year - 1),
-                  lastDate: DateTime(today.year, today.month, today.day),
-                );
-                if (picked != null) {
-                  setState(() => _lastRestock = CivilDate(picked.year, picked.month, picked.day));
-                }
-              },
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text(S.cancel)),
-        FilledButton(
-          onPressed: () {
-            if (_form.currentState!.validate()) {
-              Navigator.of(context).pop(SupplyDraft(
-                name: _name.text.trim(),
-                price: Rupees.parse(_price.text)!,
-                lifespanDays: int.parse(_days.text),
-                lastRestock: _lastRestock,
-              ));
-            }
-          },
-          child: const Text(S.add),
-        ),
-      ],
-    );
   }
 }

@@ -1,7 +1,7 @@
 import 'category.dart';
 import 'money.dart';
 
-enum AdjustmentReason { autoRefill, holdRelease, bankedMove, balanceCheck, goalSaving, manual }
+enum AdjustmentReason { autoRefill, holdRelease, bankedMove, balanceCheck, fundCover, goalSaving, manual }
 
 final class AdjustmentDraft {
   AdjustmentDraft({

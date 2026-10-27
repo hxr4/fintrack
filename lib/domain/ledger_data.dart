@@ -1,6 +1,6 @@
 import 'package:budget_engine/budget_engine.dart';
 
-enum BatchKind { refill, release }
+enum BatchKind { refill, release, correction, fundCover }
 
 final class BatchRecord {
   const BatchRecord({
@@ -68,19 +68,21 @@ final class CycleRecord {
   final Money shortfall;
   final Money baseDaily;
 
-  CycleRecord withBaseDaily(Money value) => CycleRecord(
+  CycleRecord copyWith({Money? baseDaily, Money? petrolFloor, Money? foodFloor, CycleWindow? window}) => CycleRecord(
         id: id,
-        window: window,
+        window: window ?? this.window,
         weights: weights,
         installments: installments,
         carryIn: carryIn,
         baseline: baseline,
         delta: delta,
-        foodFloor: foodFloor,
-        petrolFloor: petrolFloor,
+        foodFloor: foodFloor ?? this.foodFloor,
+        petrolFloor: petrolFloor ?? this.petrolFloor,
         shortfall: shortfall,
-        baseDaily: value,
+        baseDaily: baseDaily ?? this.baseDaily,
       );
+
+  CycleRecord withBaseDaily(Money value) => copyWith(baseDaily: value);
 }
 
 final class NamedSupply {
@@ -88,6 +90,8 @@ final class NamedSupply {
 
   final String name;
   final SupplyItemState state;
+
+  NamedSupply withState(SupplyItemState next) => NamedSupply(name: name, state: next);
 }
 
 final class NamedRecurringCost {
@@ -95,6 +99,37 @@ final class NamedRecurringCost {
 
   final String name;
   final RecurringCostState state;
+}
+
+final class LinkedFuelFill {
+  const LinkedFuelFill({required this.fill, required this.transactionId});
+
+  final FuelFill fill;
+  final String transactionId;
+}
+
+final class BikeProfile {
+  const BikeProfile({this.service = const BikeServicePlan(), this.insuranceExpiry, this.pucExpiry});
+
+  final BikeServicePlan service;
+  final CivilDate? insuranceExpiry;
+  final CivilDate? pucExpiry;
+
+  static const empty = BikeProfile();
+
+  BikeProfile withService(BikeServicePlan next) =>
+      BikeProfile(service: next, insuranceExpiry: insuranceExpiry, pucExpiry: pucExpiry);
+}
+
+final class AnchorRecord {
+  const AnchorRecord({required this.at, required this.bank, required this.cash, required this.excluded});
+
+  final DateTime at;
+  final Money bank;
+  final Money cash;
+  final Money excluded;
+
+  BalanceAnchor get anchor => BalanceAnchor(at: at, total: bank + cash - excluded);
 }
 
 final class LedgerData {
@@ -111,6 +146,9 @@ final class LedgerData {
     required this.supplies,
     required this.recurring,
     required this.learnedKeywords,
+    this.fuelFills = const [],
+    this.bike = BikeProfile.empty,
+    this.latestAnchor,
   });
 
   final CycleRecord cycle;
@@ -125,6 +163,9 @@ final class LedgerData {
   final List<NamedSupply> supplies;
   final List<NamedRecurringCost> recurring;
   final Map<String, BudgetCategory> learnedKeywords;
+  final List<LinkedFuelFill> fuelFills;
+  final BikeProfile bike;
+  final AnchorRecord? latestAnchor;
 
   Map<BudgetCategory, Money> get allocations => {
         for (final category in BudgetCategory.values)
@@ -140,6 +181,29 @@ final class LedgerData {
 
   Map<BudgetCategory, Money> get held => Holds.heldByCategory(holds);
 
+  int? get latestOdometer {
+    if (fuelFills.isEmpty) {
+      return bike.service.lastServiceKm;
+    }
+    final fromFills = fuelFills.map((linked) => linked.fill.odometerKm).reduce((a, b) => a > b ? a : b);
+    final fromService = bike.service.lastServiceKm ?? 0;
+    return fromFills > fromService ? fromFills : fromService;
+  }
+
+  FuelSummary fuelSummary(CivilDate today) =>
+      FuelLog.summarise(fuelFills.map((linked) => linked.fill), today: today);
+
+  ServiceDue serviceDue(CivilDate today) {
+    final summary = fuelSummary(today);
+    return BikeSchedule.serviceDue(
+      plan: bike.service,
+      today: today,
+      currentKm: latestOdometer,
+      ridingKm: summary.ridingKm,
+      ridingDays: summary.ridingDays,
+    );
+  }
+
   LedgerData copyWith({
     CycleRecord? cycle,
     Map<BudgetCategory, Money>? extraAllocations,
@@ -148,7 +212,12 @@ final class LedgerData {
     List<Adjustment>? adjustments,
     List<Hold>? holds,
     List<BatchRecord>? batches,
+    List<NamedSupply>? supplies,
+    List<NamedRecurringCost>? recurring,
     Map<String, BudgetCategory>? learnedKeywords,
+    List<LinkedFuelFill>? fuelFills,
+    BikeProfile? bike,
+    AnchorRecord? latestAnchor,
   }) =>
       LedgerData(
         cycle: cycle ?? this.cycle,
@@ -160,8 +229,11 @@ final class LedgerData {
         adjustments: adjustments ?? this.adjustments,
         holds: holds ?? this.holds,
         batches: batches ?? this.batches,
-        supplies: supplies,
-        recurring: recurring,
+        supplies: supplies ?? this.supplies,
+        recurring: recurring ?? this.recurring,
         learnedKeywords: learnedKeywords ?? this.learnedKeywords,
+        fuelFills: fuelFills ?? this.fuelFills,
+        bike: bike ?? this.bike,
+        latestAnchor: latestAnchor ?? this.latestAnchor,
       );
 }
