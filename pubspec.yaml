@@ -1,7 +1,7 @@
 name: fintrack
-description: "A new Flutter project."
+description: "Personal budget planner and expense tracker."
 publish_to: 'none'
-version: 0.1.0+1
+version: 0.2.0+2
 
 environment:
   sdk: ^3.13.7

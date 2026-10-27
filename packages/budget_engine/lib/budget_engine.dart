@@ -19,6 +19,7 @@ export 'src/ledger.dart';
 export 'src/money.dart';
 export 'src/policy.dart';
 export 'src/purchase_planner.dart';
+export 'src/reserves.dart';
 export 'src/runway.dart';
 export 'src/settings.dart';
 export 'src/transaction.dart';

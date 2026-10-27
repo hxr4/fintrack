@@ -134,3 +134,40 @@ Both are non-spendable like Goals, get no card on the home screen, and appear un
 
 ### D26. Shortfall cut order (F34, changed by Hari)
 After the brief's absorption order is exhausted: Misc, Recurring fund, Bike fund, supply items already due (least urgent first), Petrol, Night food stock, and Food last.
+
+## Phase 2 decisions
+
+### D27. App structure
+- `lib/domain`: pure Dart app logic on top of the engine (`LedgerData`, `BudgetSnapshot`, cycle planning, type-to-log parser, category prediction, health states, rupee formatting).
+- `lib/data`: Drift database (`database.dart` plus the generated `database.g.dart`) and `BudgetRepository`. Generated files are committed and are the only Dart files with comments, since the generator writes them. Regenerate with `dart run build_runner build --force-jit`, because the AOT build-script compile fails on this machine.
+- `lib/app`: strings, theme, router, Riverpod state (`BudgetController`, `LockController`).
+- `lib/features/<screen>`: UI only.
+- `lib/platform`: device authentication and the FLAG_SECURE channel, behind interfaces so tests can fake them.
+
+### D28. State and persistence
+The open cycle's rows are loaded once into memory. Every change is written to SQLite first and then applied in memory, and the snapshot is recomputed synchronously, so the ring and bars update on the same frame. The snapshot is also recomputed every minute and on resume, which moves the day at 04:00 and switches late-night mode on and off. Auto-adjust runs only after a spend is logged (F32). Weekly hold releases run on start and on refresh.
+
+### D29. Home screen
+Top to bottom, as Hari specified: greeting and cycle line with the lock icon, the ring with a side block (pool, banked), quick-add chips, category grid, Today's idea, bottom navigation. Section 6 of the brief also lists a type-to-log bar and a runway line, so both are kept: the runway line sits under the ring and the type-to-log bar under the chips. A settings gear sits next to the lock icon, because Settings needs an entry point until the Profile screen exists (phase 4).
+
+### D30. Quick add
+Chips log one tap to the predicted category: Night food stock between 00:00 and 04:00, otherwise the category used at least three times in the same part of the day over the last 30 days, otherwise Food. A long press opens the add sheet prefilled. Every log shows a snackbar with Undo, which also undoes any refill the log triggered.
+
+### D31. Health colours
+Pace ratio = (left / budget) / (days left / cycle length). 90 percent or more is "On track", 50 percent or more is "Running tight", below that is "At the limit". Food never turns red: at the limit it shows amber with "Food is covered by the floor". Every colour has a text label next to it. Buffer, the stock funds and Goals are neutral.
+
+### D32. Lock
+The app locks on every cold start and after 30 seconds in the background. `local_auth` is called with biometrics plus device credential fallback. If the phone has no screen lock, the lock screen explains this and lets the user continue. FLAG_SECURE is set natively before the first frame and can be turned off in Settings.
+
+### D33. Strings
+Every user-facing string lives in `lib/app/strings.dart`. A test fails if a screen contains a hardcoded text literal, or if the strings file contains phrases that discourage eating or shame spending.
+
+### D34. Supplies and recurring costs in the plan
+Onboarding stores supply items and recurring costs. Until phase 3, reserves use a steady rate: price divided by lifespan times cycle length, capped at the price, and each recurring cost divided by its months. The Essentials stock target at cycle close is the sum of item prices. Catch-up set-asides and learned lifespans arrive with phase 3 (F14).
+
+### D35. Opening balance
+Onboarding records bank balance, cash in hand and the excluded amount as the first balance anchor (F12), ready for the phase 3 balance check.
+
+### D36. Release signing and installs
+The release keystore is at `~/.fintrack/keys/fintrack-release.jks`, outside the repository. `android/key.properties` points to it, and a backup copy of that file sits next to the keystore. Both are git-ignored. Release builds refuse to build without it instead of falling back to the debug key, because a signature change forces an uninstall, which wipes data. The version code goes up every phase. Installs use `adb install -r`, which keeps app data. A debug build must never be installed over the release build.
+

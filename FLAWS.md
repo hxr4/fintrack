@@ -75,7 +75,7 @@ Status values: `open` (waiting on a decision), `planned` (fix agreed or needs no
 - **Proposed fix:** The invariant applies to engine-produced allocations and adjustments: the engine never moves a balance below zero or below a floor. A category that is negative because of user spending is shown as a cycle shortfall with the runway, as 5.5 already describes, and is tested as such.
 
 ### F10. Late-night food counts against the next day
-- **Status:** maths fixed in phase 1 (`KolkataTime.allowanceDateOf`); late-night mode planned for phase 2.
+- **Status:** fixed in phase 1 (maths) and phase 2 (late-night mode from 00:00 to 04:00: dimmed home, Night food stock card, gentle line, Night food predicted for quick add).
 - **Problem:** All maths uses calendar dates in IST. A snack at 1:30 am belongs to tomorrow's allowance, while the user experiences it as part of tonight.
 - **Why it matters:** It makes tomorrow look tight first thing in the morning and makes the late-night pattern (a known problem) invisible in today's view.
 - **Proposed fix:** An allowance day boundary at 04:00 IST for allowance, pace and runway only. Transactions keep their real timestamp, and cycle dates stay calendar dates. Late-night mode runs from 00:00 to 04:00 to match.
@@ -86,7 +86,7 @@ Status values: `open` (waiting on a decision), `planned` (fix agreed or needs no
 - **Proposed fix:** Average over pool categories only. Use the available days when fewer than seven, and fall back to base daily on day 1. When the average is zero, show "comfortable to cycle end" instead of a date.
 
 ### F12. Balance check has no opening balance and mixes in other money
-- **Status:** engine fixed in phase 1 (`BalanceCheck`); screen planned for phase 3. After a "distribute" correction the app must run auto-adjust, since a correction can take an essential to zero.
+- **Status:** engine fixed in phase 1, opening balance recorded at onboarding in phase 2 (D35), screen planned for phase 3. After a "distribute" correction the app must run auto-adjust.
 - **Problem:** Expected balance needs a starting bank balance and cash in hand, which the app never records. Rent is paid separately, possibly from the same account. Moving money from bank to cash (ATM, a friend paying cash for UPI) is not a spend, but there is no transfer type.
 - **Why it matters:** Without these, every balance check reports a false difference and the replan uses wrong numbers. That is the opposite of the neutral, trustworthy check the brief wants.
 - **Proposed fix:** Record an opening balance (bank plus cash) at onboarding and after each balance check. Compare totals (bank plus cash), not each account separately, so cash withdrawals need no logging. Let the user mark money in the account that is outside the budget (rent, savings) as an excluded amount. The Unlogged adjustment is a transaction in a hidden "Unlogged" category, so category totals stay honest.
@@ -117,7 +117,7 @@ Status values: `open` (waiting on a decision), `planned` (fix agreed or needs no
 - **Proposed fix:** Since the app is sideloaded for one user, declare USE_EXACT_ALARM, which removes one failure mode on a vivo phone. If the app is ever published, switch to SCHEDULE_EXACT_ALARM with the guided permission step.
 
 ### F18. Privacy leaks around the lock
-- **Status:** planned (phase 2 for lock and FLAG_SECURE, phase 7 for widget and notifications). **Decided (D11):** as proposed.
+- **Status:** lock and FLAG_SECURE fixed in phase 2 (D32, with a Settings toggle); widget and notification privacy planned for phase 7. Returning from the camera or share sheet is handled in phase 4, when those intents first appear.
 - **Problem:** The home-screen widget and notifications show amounts without unlocking, which bypasses the biometric lock. FLAG_SECURE also blocks screenshots, which Hari may want for sending numbers to family. Returning from the camera, gallery or share sheet would trigger the 30-second lock mid-task.
 - **Proposed fix:** Widget and notification amounts visible by default, with a "hide amounts outside the app" setting. Notifications use private visibility on the lock screen. FLAG_SECURE on by default with a toggle in settings. The lock timer ignores time spent in intents the app itself launched.
 
@@ -132,7 +132,7 @@ Status values: `open` (waiting on a decision), `planned` (fix agreed or needs no
 - **Proposed fix:** Urgency is days until the expected restock. Items not due inside this cycle are deferred first. Items already due ("reserves already due" in 5.5) are never deferred.
 
 ### F21. "Clean weeks" and streaks could reward eating less
-- **Status:** planned (phase 2 for streak data, phase 8 for confetti). **Decided (D11):** as proposed.
+- **Status:** data table added in phase 2; the "no spend" mark and streak counting are planned for phase 8, together with the clean-week confetti.
 - **Problem:** StreakDay and "confetti for clean weeks" are in the brief, but "clean" is not defined. If it means "spent under the allowance", it rewards skipping meals, which conflicts with section 6 and risk 10.
 - **Proposed fix:** A clean day means every day's spending was logged (or explicitly marked "no spend"). A clean week is seven clean days. Spending amount plays no part.
 
@@ -141,12 +141,12 @@ Status values: `open` (waiting on a decision), `planned` (fix agreed or needs no
 - **Proposed fix:** Daily accents are picked from a fixed list of variations, each checked by the contrast test in every palette and health state. No accent is generated at runtime from arbitrary hues.
 
 ### F23. Red health colour on Food can read as shaming
-- **Status:** planned (phase 8). **Decided (D11):** as proposed.
+- **Status:** fixed in phase 2 (D31).
 - **Problem:** Health colours go soft red at the limit for ring, bars and background. On the Food card, red reads as "stop eating".
 - **Proposed fix:** Food never uses red. At the limit, the Food card shows amber plus the neutral line "Food is covered by the floor" when the floor is protecting it. Red is kept for flexible categories and the overall ring. Colour states are also always paired with a text label for colour-blind readability.
 
 ### F24. Three-tap acceptance and quick-add chips need a category
-- **Status:** planned (phase 2). **Decision: no.**
+- **Status:** fixed in phase 2 (D30).
 - **Problem:** "+40" and "+100" chips do not say which category they log to.
 - **Proposed fix:** Chips log to the category predicted from time of day and recent history (Food by default), shown on the chip ("+40 Food"). A long press opens the add sheet with that amount prefilled. One tap plus the undo snackbar meets the three-tap target.
 
@@ -159,12 +159,12 @@ Status values: `open` (waiting on a decision), `planned` (fix agreed or needs no
 - **Proposed fix:** Weights are integer basis points summing to exactly 10,000, themselves produced by largest remainder. Money is split from them by largest remainder in paise, with ties broken by category order so results are deterministic.
 
 ### F27. Debit card spending has no method
-- **Status:** data model fixed in phase 1 (`PaymentMethod.card`); settings toggle planned for phase 2, reports for phase 6. **Decided (D14):** card is a third method, hidden in the add sheet unless enabled in Settings.
+- **Status:** data model fixed in phase 1; Settings toggle and hidden-by-default add sheet fixed in phase 2; reports planned for phase 6.
 - **Problem:** Method is cash or UPI only. Card payments (online orders, petrol pumps) would have to be logged as UPI, which skews the UPI versus cash report.
 - **Proposed fix:** Either add "card" as a third method, or keep two and label UPI as "digital". Your call; adding it is cheap now and expensive after data exists.
 
 ### F28. Deposits must not assume one transfer per cycle
-- **Status:** type and engine fixed in phase 1; schema planned for phase 2.
+- **Status:** type and engine fixed in phase 1; schema fixed in phase 2 (deposit rows linked to a cycle, each tagged installment or extra).
 - **Problem:** The brief talks about "the deposit" as one amount per cycle. Family may switch to weekly transfers. If the engine treats each transfer as its own deposit, the second weekly transfer would look like extra income and get the generosity split (50 percent to Food and so on), and the baseline median would compare a weekly transfer to monthly ones.
 - **Why it matters:** Weekly installments would inflate Food and flexible categories every week and make the baseline meaningless.
 - **Plan:**
@@ -192,7 +192,7 @@ Status values: `open` (waiting on a decision), `planned` (fix agreed or needs no
 - **Proposed fix:** Treat the omission as deliberate protection for data packs. Misc is never a donor in ordinary absorption or auto-adjust. It is cut only when money is truly short, before any floor or due reserve (see F34).
 
 ### F32. Undo followed by an immediate re-trigger
-- **Status:** fixed in phase 1 for the engine (`AdjustmentBatches.undo`); phase 2 wires auto-adjust to the log action only.
+- **Status:** fixed (engine in phase 1, wired to the log action only in phase 2).
 - **Problem:** If auto-adjust ran continuously, undoing a refill while Food is still at zero would make it fire again at once, and undo would look broken.
 - **Proposed fix:** Auto-adjust runs only after a transaction is logged, never on a timer or on screen refresh. Undo marks the batch undone and leaves the state exactly as it was before the batch. The next logged transaction can trigger a new refill.
 
@@ -211,3 +211,19 @@ Status values: `open` (waiting on a decision), `planned` (fix agreed or needs no
 - **Problem:** Found while simulating cycles. Auto-adjust refills Food to floor times days left (F08, agreed). If Food runs out on day 6 of a 31-day cycle, the target is ₹150 x 26 = ₹3,900. That one refill usually takes all of Buffer, Try something new and Outings in a single batch, more than three weeks before the money is actually needed.
 - **Why it matters:** The user loses every flexible rupee because of one bad week, and the Buffer that exists for emergencies is gone on day 6. The single summary will also show a large, alarming move.
 - **Fix:** Hari's design (D23): move one week, hold the rest of the commitment on the donors, release up to a week at each weekly rollover or when Food hits zero again. The full food floor for the rest of the cycle stays protected, but money is not pulled out of Buffer and flexible categories weeks before it is needed.
+
+### F36. Budget values cannot be edited after onboarding
+- **Status:** planned (phase 3). **Decision: no.**
+- **Problem:** Food floor, petrol floor, night food stock, anchor day and weights are set in onboarding. Settings shows them but cannot change them yet, because a change mid-cycle has to replan the remaining days.
+- **Proposed fix:** Edit them from the Plan screen in phase 3. A change applies to the remaining days through a replan that is written to the ledger, using the same path as the balance check.
+
+### F37. Weekly hold releases only happen while the app is open
+- **Status:** planned (phase 7). **Decision: no.**
+- **Problem:** The weekly rollover is checked on start, on resume and every minute while the app is open. If the app is not opened for a week, the release happens on the next open. No money is lost, since held money stays in its category, but Food can look lower than planned until then.
+- **Proposed fix:** Phase 7 adds a daily background check alongside the notifications. Until then, opening the app catches up immediately.
+
+### F38. Seed-data tool for demos
+- **Status:** planned (phase 3). **Decision: no.**
+- **Problem:** Section 12 asks for a tool that simulates three months for demos. The engine tests already simulate three months, but there is no way to load that into the app.
+- **Proposed fix:** A debug-only menu item that fills a fresh install with three simulated months, using the acceptance-test spending model. It will never appear in release builds.
+
