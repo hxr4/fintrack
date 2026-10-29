@@ -117,12 +117,12 @@ Status values: `open` (waiting on a decision), `planned` (fix agreed or needs no
 - **Proposed fix:** Since the app is sideloaded for one user, declare USE_EXACT_ALARM, which removes one failure mode on a vivo phone. If the app is ever published, switch to SCHEDULE_EXACT_ALARM with the guided permission step.
 
 ### F18. Privacy leaks around the lock
-- **Status:** lock and FLAG_SECURE fixed in phase 2 (D32, with a Settings toggle); widget and notification privacy planned for phase 7. Returning from the camera or share sheet is handled in phase 4, when those intents first appear.
+- **Status:** lock and FLAG_SECURE fixed in phase 2; the lock ignores returning from the file picker, share sheet, camera and gallery since the backup step and phase 4 (D48, D52); widget and notification privacy planned for phase 7.
 - **Problem:** The home-screen widget and notifications show amounts without unlocking, which bypasses the biometric lock. FLAG_SECURE also blocks screenshots, which Hari may want for sending numbers to family. Returning from the camera, gallery or share sheet would trigger the 30-second lock mid-task.
 - **Proposed fix:** Widget and notification amounts visible by default, with a "hide amounts outside the app" setting. Notifications use private visibility on the lock screen. FLAG_SECURE on by default with a toggle in settings. The lock timer ignores time spent in intents the app itself launched.
 
 ### F19. Encryption and Android Auto Backup do not mix
-- **Status:** planned (phase 6). **Decided (D11):** no database encryption, database included in Auto Backup, manual backups encrypted with a passphrase.
+- **Status:** fixed in the backup step (D47, D50).
 - **Problem:** If the database is encrypted with a key held in Android Keystore, Auto Backup restores the database without the key, which is unreadable. Manual backup files in Downloads are readable by other apps if they are plain.
 - **Proposed fix:** If encryption is on, exclude the database from Auto Backup and rely on the manual backup, which is encrypted with a passphrase you choose. If encryption is off, Auto Backup includes the database, and manual backups can still be passphrase-protected.
 
@@ -233,7 +233,23 @@ Status values: `open` (waiting on a decision), `planned` (fix agreed or needs no
 - **Fix:** A deposit's recorded time is noon on its date, or now if that is earlier (D42). Covered by tests.
 
 ### F40. Schema migrations have no test against real old data
-- **Status:** planned (phase 6). **Decision: no.**
+- **Status:** fixed in the backup step (D49).
 - **Problem:** Phase 3 moves the database to version 2 (supply savings and fuel fills) with a migration. The phone was reinstalled fresh for this phase, so no version 1 database exists there, but later phases will need upgrades that keep data.
 - **Proposed fix:** From phase 6, export the Drift schema for each version and add migration tests that open a database from every earlier version, alongside the backup and restore work.
+
+
+### F41. A balance check before logging the new deposit treats the deposit as surplus
+- **Status:** fixed (backup step, before phase 4). **Decision: no** (fix specified by Hari).
+- **Confirmed in code:** `BalanceCheck.resolve` sends any positive difference to Buffer, through an Unlogged credit plus a move. If the month's money has landed but has not been logged, the difference is about one deposit. Resolving it puts that money in Buffer. When the deposit is then logged as Monthly money, it is planned a second time. The ledger then holds the money twice, and the next check shows a shortfall of about one deposit. "Spread it across categories" has the same problem, through credits to categories.
+- **Fix:** When the difference is positive and within 20 percent of the last monthly deposit, the screen shows "This looks like this month's money. Log it first?" above the three options, with a Money arrived button that opens the deposit sheet. The screen also explains what to enter (bank plus cash, minus money not for this budget) and to log a new deposit first. The three options stay available, so a genuine surplus can still be resolved.
+
+### F42. Money already in hand at setup never joins the plan
+- **Status:** fixed (backup step, before phase 4). **Decision: no** (fix specified by Hari).
+- **Confirmed in code, with one correction:** onboarding asks for bank balance, cash and excluded money, and records them only as the first balance anchor. The plan uses the deposit alone (no carry-in). Any leftover is real money the plan never sees. The claim needs one correction: the balance check does not catch this. It compares today's money with the anchor, and the anchor already includes the leftover, so every check says "matches" while the plan stays short by the leftover for good. The reverse is also possible: if bank plus cash is entered without the deposit, the plan holds more money than the anchor. The first check then reports the deposit as surplus, which is F41 again.
+- **Fix:** Onboarding has a "Money already in hand" field on the balances step. It is prefilled with bank plus cash minus excluded money minus the deposit, and joins the first pool as a carry-in. Next is blocked unless deposit plus money already in hand equals bank plus cash minus excluded money, and the message shows the exact gap. That way the plan total, the anchor and the balance check start from the same number. Tests cover the first balance check right after onboarding, before and after noon, with and without leftover.
+
+### F43. Photos make backups larger
+- **Status:** accepted (phase 4). **Decision: no.**
+- **Problem:** Photos are stored in the database (D52), so every photo makes each backup larger. A dozen bill photos at about 300 KB each add about 4 MB.
+- **Why it is acceptable:** Backups are compressed and kept in Downloads or shared, and complete restores matter more than size. If backups ever pass about 25 MB, photos could be moved to a separate optional file.
 

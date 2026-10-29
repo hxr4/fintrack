@@ -8,6 +8,7 @@ import '../../app/strings.dart';
 import '../../app/theme.dart';
 import '../../domain/cycle_planning.dart';
 import '../../domain/rupees.dart';
+import '../backup/backup_screen.dart';
 import '../common/item_dialogs.dart';
 import '../common/widgets.dart';
 
@@ -34,6 +35,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _bank = TextEditingController();
   final _cash = TextEditingController(text: '0');
   final _excluded = TextEditingController(text: '0');
+  final _leftover = TextEditingController(text: '0');
+  var _leftoverEdited = false;
   late CivilDate _depositDate;
   final _weights = <BudgetCategory, int>{
     BudgetCategory.food: 60,
@@ -58,7 +61,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   void dispose() {
     _pages.dispose();
-    for (final controller in [_deposit, _anchorDay, _foodFloor, _petrolFloor, _nightFood, _bank, _cash, _excluded]) {
+    for (final controller in [_deposit, _anchorDay, _foodFloor, _petrolFloor, _nightFood, _bank, _cash, _excluded, _leftover]) {
       controller.dispose();
     }
     super.dispose();
@@ -103,6 +106,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       bank: Rupees.parse(_bank.text) ?? Money.zero,
       cash: Rupees.parse(_cash.text) ?? Money.zero,
       excluded: Rupees.parse(_excluded.text) ?? Money.zero,
+      leftover: Rupees.parse(_leftover.text) ?? Money.zero,
       recurring: List.of(_recurring),
       supplies: List.of(_supplies),
       cardEnabled: _cardEnabled,
@@ -205,6 +209,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   List<Widget> _welcome() => [
         _title(S.onboardingWelcomeTitle, S.onboardingWelcomeBody),
+        const SizedBox(height: 16),
+        Text(S.restoreOnboardingHint, style: TextStyle(color: context.palette.mutedText)),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          key: const Key('onboarding-restore'),
+          onPressed: _saving
+              ? null
+              : () async {
+                  setState(() => _saving = true);
+                  await runRestoreFlow(context, ref, replacing: false);
+                  if (mounted) {
+                    setState(() => _saving = false);
+                  }
+                },
+          icon: const Icon(Icons.restore),
+          label: const Text(S.restoreBackup),
+        ),
         if (kDebugMode) ...[
           const SizedBox(height: 24),
           OutlinedButton(
@@ -296,11 +317,70 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     ];
   }
 
+  void _suggestLeftover() {
+    if (_leftoverEdited) {
+      return;
+    }
+    final gap = OnboardingInput.balancesGapFor(
+      deposit: Rupees.parse(_deposit.text) ?? Money.zero,
+      leftover: Money.zero,
+      bank: Rupees.parse(_bank.text) ?? Money.zero,
+      cash: Rupees.parse(_cash.text) ?? Money.zero,
+      excluded: Rupees.parse(_excluded.text) ?? Money.zero,
+    );
+    _leftover.text = Rupees.plain(gap.positivePart).replaceAll(',', '');
+  }
+
+  String? _validateLeftover(String? value) {
+    final basic = _money(value, allowZero: true);
+    if (basic != null) {
+      return basic;
+    }
+    final deposit = Rupees.parse(_deposit.text) ?? Money.zero;
+    final leftover = Rupees.parse(value ?? '') ?? Money.zero;
+    final total = (Rupees.parse(_bank.text) ?? Money.zero) + (Rupees.parse(_cash.text) ?? Money.zero) - (Rupees.parse(_excluded.text) ?? Money.zero);
+    if (total != deposit + leftover) {
+      return S.balancesGapMessage(Rupees.format(total), Rupees.format(deposit + leftover));
+    }
+    return null;
+  }
+
   List<Widget> _balancesStep() => [
         _title(S.balancesTitle, S.balancesBody),
-        _moneyField('field-bank', _bank, S.bankBalance, allowZero: true),
-        _moneyField('field-cash', _cash, S.cashInHand, allowZero: true),
-        _moneyField('field-excluded', _excluded, S.excludedAmount, helper: S.excludedHint, allowZero: true),
+        for (final (key, controller, label, helper) in [
+          ('field-bank', _bank, S.bankBalance, null),
+          ('field-cash', _cash, S.cashInHand, null),
+          ('field-excluded', _excluded, S.excludedAmount, S.excludedHint),
+        ])
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: TextFormField(
+              key: Key(key),
+              controller: controller,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: InputDecoration(labelText: label, helperText: helper, prefixText: '₹ ', border: const OutlineInputBorder()),
+              validator: (value) => _money(value, allowZero: true),
+              onChanged: (_) => setState(_suggestLeftover),
+            ),
+          ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: TextFormField(
+            key: const Key('field-leftover'),
+            controller: _leftover,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(
+              labelText: S.leftoverLabel,
+              helperText: S.leftoverHint,
+              helperMaxLines: 2,
+              errorMaxLines: 4,
+              prefixText: '₹ ',
+              border: OutlineInputBorder(),
+            ),
+            validator: _validateLeftover,
+            onChanged: (_) => _leftoverEdited = true,
+          ),
+        ),
       ];
 
   List<Widget> _recurringStep() => [

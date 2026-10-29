@@ -156,6 +156,7 @@ final class BudgetRepository {
       supplies: [for (final supply in supplies) supply.state],
       recurring: [for (final cost in recurring) cost.state],
       history: CycleHistory.empty,
+      carryInToPool: input.leftover,
     );
     await db.transaction(() async {
       await _saveBudgetSettings(settings, input.excluded);

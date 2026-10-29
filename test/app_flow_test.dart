@@ -30,7 +30,14 @@ void main() {
     await tester.tap(find.byKey(const Key('onboard-next')));
     await settle(tester);
 
-    await tester.enterText(find.byKey(const Key('field-bank')), '12000');
+    await tester.enterText(find.byKey(const Key('field-bank')), '11000');
+    await settle(tester);
+    await tester.tap(find.byKey(const Key('onboard-next')));
+    await settle(tester);
+    expect(find.textContaining('They need to match'), findsOneWidget);
+    await tester.enterText(find.byKey(const Key('field-bank')), '13500');
+    await settle(tester);
+    expect(tester.widget<EditableText>(find.descendant(of: find.byKey(const Key('field-leftover')), matching: find.byType(EditableText))).controller.text, '1500');
     await tester.tap(find.byKey(const Key('onboard-next')));
     await settle(tester);
 
@@ -44,7 +51,7 @@ void main() {
     await settle(tester, frames: 60);
 
     expect(find.byKey(const Key('ring-amount')), findsOneWidget);
-    expect(ringText(tester), '₹316');
+    expect(ringText(tester), '₹358');
     expect(tester.widget<Text>(find.byKey(const Key('cycle-line'))).data, 'Day 1 of 26, 26 left');
     for (final category in [BudgetCategory.food, BudgetCategory.petrol, BudgetCategory.goals]) {
       expect(find.byKey(Key('card-${category.name}')), findsOneWidget);
@@ -52,7 +59,7 @@ void main() {
     expect(find.byKey(const Key('card-bikeFund')), findsNothing);
     expect(find.byKey(const Key('card-recurringFund')), findsNothing);
     expect(find.byKey(const Key('add-goals')), findsNothing);
-    expect(leftText(tester, BudgetCategory.food), '₹6,750');
+    expect(leftText(tester, BudgetCategory.food), '₹7,650');
     await unmount(tester);
     await db.close();
   });

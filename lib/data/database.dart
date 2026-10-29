@@ -144,6 +144,37 @@ class FuelFills extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+@DataClassName('GearItemRow')
+class GearItems extends Table {
+  TextColumn get id => text()();
+  TextColumn get kind => text()();
+  TextColumn get name => text()();
+  TextColumn get variant => text().withDefault(const Constant(''))();
+  TextColumn get specs => text().withDefault(const Constant(''))();
+  TextColumn get imageAsset => text().nullable()();
+  TextColumn get photoId => text().nullable()();
+  TextColumn get purchaseDate => text().nullable()();
+  IntColumn get pricePaise => integer().nullable()();
+  TextColumn get seller => text().withDefault(const Constant(''))();
+  TextColumn get warrantyEnd => text().nullable()();
+  TextColumn get notes => text().withDefault(const Constant(''))();
+  TextColumn get billPhotoId => text().nullable()();
+  IntColumn get sortOrder => integer().withDefault(const Constant(0))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@DataClassName('PhotoRow')
+class Photos extends Table {
+  TextColumn get id => text()();
+  BlobColumn get bytes => blob()();
+  IntColumn get createdAt => integer()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 @DataClassName('RecurringCostRow')
 class RecurringCosts extends Table {
   TextColumn get id => text()();
@@ -198,6 +229,8 @@ class StreakDays extends Table {
     BalanceAnchors,
     KeywordMappings,
     StreakDays,
+    GearItems,
+    Photos,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -206,7 +239,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.open() : super(driftDatabase(name: 'fintrack'));
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -215,6 +248,10 @@ class AppDatabase extends _$AppDatabase {
             await migrator.addColumn(supplyItems, supplyItems.savedPaise);
             await migrator.addColumn(supplyItems, supplyItems.lastRestockEstimated);
             await migrator.createTable(fuelFills);
+          }
+          if (from < 3) {
+            await migrator.createTable(gearItems);
+            await migrator.createTable(photos);
           }
         },
         beforeOpen: (details) async {

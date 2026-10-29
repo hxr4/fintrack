@@ -6174,6 +6174,1069 @@ class StreakDaysCompanion extends UpdateCompanion<StreakDayRow> {
   }
 }
 
+class $GearItemsTable extends GearItems
+    with TableInfo<$GearItemsTable, GearItemRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $GearItemsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _variantMeta = const VerificationMeta(
+    'variant',
+  );
+  @override
+  late final GeneratedColumn<String> variant = GeneratedColumn<String>(
+    'variant',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _specsMeta = const VerificationMeta('specs');
+  @override
+  late final GeneratedColumn<String> specs = GeneratedColumn<String>(
+    'specs',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _imageAssetMeta = const VerificationMeta(
+    'imageAsset',
+  );
+  @override
+  late final GeneratedColumn<String> imageAsset = GeneratedColumn<String>(
+    'image_asset',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _photoIdMeta = const VerificationMeta(
+    'photoId',
+  );
+  @override
+  late final GeneratedColumn<String> photoId = GeneratedColumn<String>(
+    'photo_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _purchaseDateMeta = const VerificationMeta(
+    'purchaseDate',
+  );
+  @override
+  late final GeneratedColumn<String> purchaseDate = GeneratedColumn<String>(
+    'purchase_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pricePaiseMeta = const VerificationMeta(
+    'pricePaise',
+  );
+  @override
+  late final GeneratedColumn<int> pricePaise = GeneratedColumn<int>(
+    'price_paise',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sellerMeta = const VerificationMeta('seller');
+  @override
+  late final GeneratedColumn<String> seller = GeneratedColumn<String>(
+    'seller',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _warrantyEndMeta = const VerificationMeta(
+    'warrantyEnd',
+  );
+  @override
+  late final GeneratedColumn<String> warrantyEnd = GeneratedColumn<String>(
+    'warranty_end',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _billPhotoIdMeta = const VerificationMeta(
+    'billPhotoId',
+  );
+  @override
+  late final GeneratedColumn<String> billPhotoId = GeneratedColumn<String>(
+    'bill_photo_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta(
+    'sortOrder',
+  );
+  @override
+  late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
+    'sort_order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    kind,
+    name,
+    variant,
+    specs,
+    imageAsset,
+    photoId,
+    purchaseDate,
+    pricePaise,
+    seller,
+    warrantyEnd,
+    notes,
+    billPhotoId,
+    sortOrder,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'gear_items';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<GearItemRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('variant')) {
+      context.handle(
+        _variantMeta,
+        variant.isAcceptableOrUnknown(data['variant']!, _variantMeta),
+      );
+    }
+    if (data.containsKey('specs')) {
+      context.handle(
+        _specsMeta,
+        specs.isAcceptableOrUnknown(data['specs']!, _specsMeta),
+      );
+    }
+    if (data.containsKey('image_asset')) {
+      context.handle(
+        _imageAssetMeta,
+        imageAsset.isAcceptableOrUnknown(data['image_asset']!, _imageAssetMeta),
+      );
+    }
+    if (data.containsKey('photo_id')) {
+      context.handle(
+        _photoIdMeta,
+        photoId.isAcceptableOrUnknown(data['photo_id']!, _photoIdMeta),
+      );
+    }
+    if (data.containsKey('purchase_date')) {
+      context.handle(
+        _purchaseDateMeta,
+        purchaseDate.isAcceptableOrUnknown(
+          data['purchase_date']!,
+          _purchaseDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('price_paise')) {
+      context.handle(
+        _pricePaiseMeta,
+        pricePaise.isAcceptableOrUnknown(data['price_paise']!, _pricePaiseMeta),
+      );
+    }
+    if (data.containsKey('seller')) {
+      context.handle(
+        _sellerMeta,
+        seller.isAcceptableOrUnknown(data['seller']!, _sellerMeta),
+      );
+    }
+    if (data.containsKey('warranty_end')) {
+      context.handle(
+        _warrantyEndMeta,
+        warrantyEnd.isAcceptableOrUnknown(
+          data['warranty_end']!,
+          _warrantyEndMeta,
+        ),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('bill_photo_id')) {
+      context.handle(
+        _billPhotoIdMeta,
+        billPhotoId.isAcceptableOrUnknown(
+          data['bill_photo_id']!,
+          _billPhotoIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sort_order')) {
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  GearItemRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return GearItemRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      variant: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}variant'],
+      )!,
+      specs: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}specs'],
+      )!,
+      imageAsset: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}image_asset'],
+      ),
+      photoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}photo_id'],
+      ),
+      purchaseDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}purchase_date'],
+      ),
+      pricePaise: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}price_paise'],
+      ),
+      seller: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}seller'],
+      )!,
+      warrantyEnd: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}warranty_end'],
+      ),
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      )!,
+      billPhotoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}bill_photo_id'],
+      ),
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sort_order'],
+      )!,
+    );
+  }
+
+  @override
+  $GearItemsTable createAlias(String alias) {
+    return $GearItemsTable(attachedDatabase, alias);
+  }
+}
+
+class GearItemRow extends DataClass implements Insertable<GearItemRow> {
+  final String id;
+  final String kind;
+  final String name;
+  final String variant;
+  final String specs;
+  final String? imageAsset;
+  final String? photoId;
+  final String? purchaseDate;
+  final int? pricePaise;
+  final String seller;
+  final String? warrantyEnd;
+  final String notes;
+  final String? billPhotoId;
+  final int sortOrder;
+  const GearItemRow({
+    required this.id,
+    required this.kind,
+    required this.name,
+    required this.variant,
+    required this.specs,
+    this.imageAsset,
+    this.photoId,
+    this.purchaseDate,
+    this.pricePaise,
+    required this.seller,
+    this.warrantyEnd,
+    required this.notes,
+    this.billPhotoId,
+    required this.sortOrder,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['kind'] = Variable<String>(kind);
+    map['name'] = Variable<String>(name);
+    map['variant'] = Variable<String>(variant);
+    map['specs'] = Variable<String>(specs);
+    if (!nullToAbsent || imageAsset != null) {
+      map['image_asset'] = Variable<String>(imageAsset);
+    }
+    if (!nullToAbsent || photoId != null) {
+      map['photo_id'] = Variable<String>(photoId);
+    }
+    if (!nullToAbsent || purchaseDate != null) {
+      map['purchase_date'] = Variable<String>(purchaseDate);
+    }
+    if (!nullToAbsent || pricePaise != null) {
+      map['price_paise'] = Variable<int>(pricePaise);
+    }
+    map['seller'] = Variable<String>(seller);
+    if (!nullToAbsent || warrantyEnd != null) {
+      map['warranty_end'] = Variable<String>(warrantyEnd);
+    }
+    map['notes'] = Variable<String>(notes);
+    if (!nullToAbsent || billPhotoId != null) {
+      map['bill_photo_id'] = Variable<String>(billPhotoId);
+    }
+    map['sort_order'] = Variable<int>(sortOrder);
+    return map;
+  }
+
+  GearItemsCompanion toCompanion(bool nullToAbsent) {
+    return GearItemsCompanion(
+      id: Value(id),
+      kind: Value(kind),
+      name: Value(name),
+      variant: Value(variant),
+      specs: Value(specs),
+      imageAsset: imageAsset == null && nullToAbsent
+          ? const Value.absent()
+          : Value(imageAsset),
+      photoId: photoId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(photoId),
+      purchaseDate: purchaseDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(purchaseDate),
+      pricePaise: pricePaise == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pricePaise),
+      seller: Value(seller),
+      warrantyEnd: warrantyEnd == null && nullToAbsent
+          ? const Value.absent()
+          : Value(warrantyEnd),
+      notes: Value(notes),
+      billPhotoId: billPhotoId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(billPhotoId),
+      sortOrder: Value(sortOrder),
+    );
+  }
+
+  factory GearItemRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return GearItemRow(
+      id: serializer.fromJson<String>(json['id']),
+      kind: serializer.fromJson<String>(json['kind']),
+      name: serializer.fromJson<String>(json['name']),
+      variant: serializer.fromJson<String>(json['variant']),
+      specs: serializer.fromJson<String>(json['specs']),
+      imageAsset: serializer.fromJson<String?>(json['imageAsset']),
+      photoId: serializer.fromJson<String?>(json['photoId']),
+      purchaseDate: serializer.fromJson<String?>(json['purchaseDate']),
+      pricePaise: serializer.fromJson<int?>(json['pricePaise']),
+      seller: serializer.fromJson<String>(json['seller']),
+      warrantyEnd: serializer.fromJson<String?>(json['warrantyEnd']),
+      notes: serializer.fromJson<String>(json['notes']),
+      billPhotoId: serializer.fromJson<String?>(json['billPhotoId']),
+      sortOrder: serializer.fromJson<int>(json['sortOrder']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'kind': serializer.toJson<String>(kind),
+      'name': serializer.toJson<String>(name),
+      'variant': serializer.toJson<String>(variant),
+      'specs': serializer.toJson<String>(specs),
+      'imageAsset': serializer.toJson<String?>(imageAsset),
+      'photoId': serializer.toJson<String?>(photoId),
+      'purchaseDate': serializer.toJson<String?>(purchaseDate),
+      'pricePaise': serializer.toJson<int?>(pricePaise),
+      'seller': serializer.toJson<String>(seller),
+      'warrantyEnd': serializer.toJson<String?>(warrantyEnd),
+      'notes': serializer.toJson<String>(notes),
+      'billPhotoId': serializer.toJson<String?>(billPhotoId),
+      'sortOrder': serializer.toJson<int>(sortOrder),
+    };
+  }
+
+  GearItemRow copyWith({
+    String? id,
+    String? kind,
+    String? name,
+    String? variant,
+    String? specs,
+    Value<String?> imageAsset = const Value.absent(),
+    Value<String?> photoId = const Value.absent(),
+    Value<String?> purchaseDate = const Value.absent(),
+    Value<int?> pricePaise = const Value.absent(),
+    String? seller,
+    Value<String?> warrantyEnd = const Value.absent(),
+    String? notes,
+    Value<String?> billPhotoId = const Value.absent(),
+    int? sortOrder,
+  }) => GearItemRow(
+    id: id ?? this.id,
+    kind: kind ?? this.kind,
+    name: name ?? this.name,
+    variant: variant ?? this.variant,
+    specs: specs ?? this.specs,
+    imageAsset: imageAsset.present ? imageAsset.value : this.imageAsset,
+    photoId: photoId.present ? photoId.value : this.photoId,
+    purchaseDate: purchaseDate.present ? purchaseDate.value : this.purchaseDate,
+    pricePaise: pricePaise.present ? pricePaise.value : this.pricePaise,
+    seller: seller ?? this.seller,
+    warrantyEnd: warrantyEnd.present ? warrantyEnd.value : this.warrantyEnd,
+    notes: notes ?? this.notes,
+    billPhotoId: billPhotoId.present ? billPhotoId.value : this.billPhotoId,
+    sortOrder: sortOrder ?? this.sortOrder,
+  );
+  GearItemRow copyWithCompanion(GearItemsCompanion data) {
+    return GearItemRow(
+      id: data.id.present ? data.id.value : this.id,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      name: data.name.present ? data.name.value : this.name,
+      variant: data.variant.present ? data.variant.value : this.variant,
+      specs: data.specs.present ? data.specs.value : this.specs,
+      imageAsset: data.imageAsset.present
+          ? data.imageAsset.value
+          : this.imageAsset,
+      photoId: data.photoId.present ? data.photoId.value : this.photoId,
+      purchaseDate: data.purchaseDate.present
+          ? data.purchaseDate.value
+          : this.purchaseDate,
+      pricePaise: data.pricePaise.present
+          ? data.pricePaise.value
+          : this.pricePaise,
+      seller: data.seller.present ? data.seller.value : this.seller,
+      warrantyEnd: data.warrantyEnd.present
+          ? data.warrantyEnd.value
+          : this.warrantyEnd,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      billPhotoId: data.billPhotoId.present
+          ? data.billPhotoId.value
+          : this.billPhotoId,
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GearItemRow(')
+          ..write('id: $id, ')
+          ..write('kind: $kind, ')
+          ..write('name: $name, ')
+          ..write('variant: $variant, ')
+          ..write('specs: $specs, ')
+          ..write('imageAsset: $imageAsset, ')
+          ..write('photoId: $photoId, ')
+          ..write('purchaseDate: $purchaseDate, ')
+          ..write('pricePaise: $pricePaise, ')
+          ..write('seller: $seller, ')
+          ..write('warrantyEnd: $warrantyEnd, ')
+          ..write('notes: $notes, ')
+          ..write('billPhotoId: $billPhotoId, ')
+          ..write('sortOrder: $sortOrder')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    kind,
+    name,
+    variant,
+    specs,
+    imageAsset,
+    photoId,
+    purchaseDate,
+    pricePaise,
+    seller,
+    warrantyEnd,
+    notes,
+    billPhotoId,
+    sortOrder,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is GearItemRow &&
+          other.id == this.id &&
+          other.kind == this.kind &&
+          other.name == this.name &&
+          other.variant == this.variant &&
+          other.specs == this.specs &&
+          other.imageAsset == this.imageAsset &&
+          other.photoId == this.photoId &&
+          other.purchaseDate == this.purchaseDate &&
+          other.pricePaise == this.pricePaise &&
+          other.seller == this.seller &&
+          other.warrantyEnd == this.warrantyEnd &&
+          other.notes == this.notes &&
+          other.billPhotoId == this.billPhotoId &&
+          other.sortOrder == this.sortOrder);
+}
+
+class GearItemsCompanion extends UpdateCompanion<GearItemRow> {
+  final Value<String> id;
+  final Value<String> kind;
+  final Value<String> name;
+  final Value<String> variant;
+  final Value<String> specs;
+  final Value<String?> imageAsset;
+  final Value<String?> photoId;
+  final Value<String?> purchaseDate;
+  final Value<int?> pricePaise;
+  final Value<String> seller;
+  final Value<String?> warrantyEnd;
+  final Value<String> notes;
+  final Value<String?> billPhotoId;
+  final Value<int> sortOrder;
+  final Value<int> rowid;
+  const GearItemsCompanion({
+    this.id = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.name = const Value.absent(),
+    this.variant = const Value.absent(),
+    this.specs = const Value.absent(),
+    this.imageAsset = const Value.absent(),
+    this.photoId = const Value.absent(),
+    this.purchaseDate = const Value.absent(),
+    this.pricePaise = const Value.absent(),
+    this.seller = const Value.absent(),
+    this.warrantyEnd = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.billPhotoId = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  GearItemsCompanion.insert({
+    required String id,
+    required String kind,
+    required String name,
+    this.variant = const Value.absent(),
+    this.specs = const Value.absent(),
+    this.imageAsset = const Value.absent(),
+    this.photoId = const Value.absent(),
+    this.purchaseDate = const Value.absent(),
+    this.pricePaise = const Value.absent(),
+    this.seller = const Value.absent(),
+    this.warrantyEnd = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.billPhotoId = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       kind = Value(kind),
+       name = Value(name);
+  static Insertable<GearItemRow> custom({
+    Expression<String>? id,
+    Expression<String>? kind,
+    Expression<String>? name,
+    Expression<String>? variant,
+    Expression<String>? specs,
+    Expression<String>? imageAsset,
+    Expression<String>? photoId,
+    Expression<String>? purchaseDate,
+    Expression<int>? pricePaise,
+    Expression<String>? seller,
+    Expression<String>? warrantyEnd,
+    Expression<String>? notes,
+    Expression<String>? billPhotoId,
+    Expression<int>? sortOrder,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (kind != null) 'kind': kind,
+      if (name != null) 'name': name,
+      if (variant != null) 'variant': variant,
+      if (specs != null) 'specs': specs,
+      if (imageAsset != null) 'image_asset': imageAsset,
+      if (photoId != null) 'photo_id': photoId,
+      if (purchaseDate != null) 'purchase_date': purchaseDate,
+      if (pricePaise != null) 'price_paise': pricePaise,
+      if (seller != null) 'seller': seller,
+      if (warrantyEnd != null) 'warranty_end': warrantyEnd,
+      if (notes != null) 'notes': notes,
+      if (billPhotoId != null) 'bill_photo_id': billPhotoId,
+      if (sortOrder != null) 'sort_order': sortOrder,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  GearItemsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? kind,
+    Value<String>? name,
+    Value<String>? variant,
+    Value<String>? specs,
+    Value<String?>? imageAsset,
+    Value<String?>? photoId,
+    Value<String?>? purchaseDate,
+    Value<int?>? pricePaise,
+    Value<String>? seller,
+    Value<String?>? warrantyEnd,
+    Value<String>? notes,
+    Value<String?>? billPhotoId,
+    Value<int>? sortOrder,
+    Value<int>? rowid,
+  }) {
+    return GearItemsCompanion(
+      id: id ?? this.id,
+      kind: kind ?? this.kind,
+      name: name ?? this.name,
+      variant: variant ?? this.variant,
+      specs: specs ?? this.specs,
+      imageAsset: imageAsset ?? this.imageAsset,
+      photoId: photoId ?? this.photoId,
+      purchaseDate: purchaseDate ?? this.purchaseDate,
+      pricePaise: pricePaise ?? this.pricePaise,
+      seller: seller ?? this.seller,
+      warrantyEnd: warrantyEnd ?? this.warrantyEnd,
+      notes: notes ?? this.notes,
+      billPhotoId: billPhotoId ?? this.billPhotoId,
+      sortOrder: sortOrder ?? this.sortOrder,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (variant.present) {
+      map['variant'] = Variable<String>(variant.value);
+    }
+    if (specs.present) {
+      map['specs'] = Variable<String>(specs.value);
+    }
+    if (imageAsset.present) {
+      map['image_asset'] = Variable<String>(imageAsset.value);
+    }
+    if (photoId.present) {
+      map['photo_id'] = Variable<String>(photoId.value);
+    }
+    if (purchaseDate.present) {
+      map['purchase_date'] = Variable<String>(purchaseDate.value);
+    }
+    if (pricePaise.present) {
+      map['price_paise'] = Variable<int>(pricePaise.value);
+    }
+    if (seller.present) {
+      map['seller'] = Variable<String>(seller.value);
+    }
+    if (warrantyEnd.present) {
+      map['warranty_end'] = Variable<String>(warrantyEnd.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (billPhotoId.present) {
+      map['bill_photo_id'] = Variable<String>(billPhotoId.value);
+    }
+    if (sortOrder.present) {
+      map['sort_order'] = Variable<int>(sortOrder.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GearItemsCompanion(')
+          ..write('id: $id, ')
+          ..write('kind: $kind, ')
+          ..write('name: $name, ')
+          ..write('variant: $variant, ')
+          ..write('specs: $specs, ')
+          ..write('imageAsset: $imageAsset, ')
+          ..write('photoId: $photoId, ')
+          ..write('purchaseDate: $purchaseDate, ')
+          ..write('pricePaise: $pricePaise, ')
+          ..write('seller: $seller, ')
+          ..write('warrantyEnd: $warrantyEnd, ')
+          ..write('notes: $notes, ')
+          ..write('billPhotoId: $billPhotoId, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PhotosTable extends Photos with TableInfo<$PhotosTable, PhotoRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PhotosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bytesMeta = const VerificationMeta('bytes');
+  @override
+  late final GeneratedColumn<Uint8List> bytes = GeneratedColumn<Uint8List>(
+    'bytes',
+    aliasedName,
+    false,
+    type: DriftSqlType.blob,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, bytes, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'photos';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PhotoRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('bytes')) {
+      context.handle(
+        _bytesMeta,
+        bytes.isAcceptableOrUnknown(data['bytes']!, _bytesMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bytesMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PhotoRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PhotoRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      bytes: attachedDatabase.typeMapping.read(
+        DriftSqlType.blob,
+        data['${effectivePrefix}bytes'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PhotosTable createAlias(String alias) {
+    return $PhotosTable(attachedDatabase, alias);
+  }
+}
+
+class PhotoRow extends DataClass implements Insertable<PhotoRow> {
+  final String id;
+  final Uint8List bytes;
+  final int createdAt;
+  const PhotoRow({
+    required this.id,
+    required this.bytes,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['bytes'] = Variable<Uint8List>(bytes);
+    map['created_at'] = Variable<int>(createdAt);
+    return map;
+  }
+
+  PhotosCompanion toCompanion(bool nullToAbsent) {
+    return PhotosCompanion(
+      id: Value(id),
+      bytes: Value(bytes),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory PhotoRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PhotoRow(
+      id: serializer.fromJson<String>(json['id']),
+      bytes: serializer.fromJson<Uint8List>(json['bytes']),
+      createdAt: serializer.fromJson<int>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'bytes': serializer.toJson<Uint8List>(bytes),
+      'createdAt': serializer.toJson<int>(createdAt),
+    };
+  }
+
+  PhotoRow copyWith({String? id, Uint8List? bytes, int? createdAt}) => PhotoRow(
+    id: id ?? this.id,
+    bytes: bytes ?? this.bytes,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  PhotoRow copyWithCompanion(PhotosCompanion data) {
+    return PhotoRow(
+      id: data.id.present ? data.id.value : this.id,
+      bytes: data.bytes.present ? data.bytes.value : this.bytes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PhotoRow(')
+          ..write('id: $id, ')
+          ..write('bytes: $bytes, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, $driftBlobEquality.hash(bytes), createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PhotoRow &&
+          other.id == this.id &&
+          $driftBlobEquality.equals(other.bytes, this.bytes) &&
+          other.createdAt == this.createdAt);
+}
+
+class PhotosCompanion extends UpdateCompanion<PhotoRow> {
+  final Value<String> id;
+  final Value<Uint8List> bytes;
+  final Value<int> createdAt;
+  final Value<int> rowid;
+  const PhotosCompanion({
+    this.id = const Value.absent(),
+    this.bytes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PhotosCompanion.insert({
+    required String id,
+    required Uint8List bytes,
+    required int createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       bytes = Value(bytes),
+       createdAt = Value(createdAt);
+  static Insertable<PhotoRow> custom({
+    Expression<String>? id,
+    Expression<Uint8List>? bytes,
+    Expression<int>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (bytes != null) 'bytes': bytes,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PhotosCompanion copyWith({
+    Value<String>? id,
+    Value<Uint8List>? bytes,
+    Value<int>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return PhotosCompanion(
+      id: id ?? this.id,
+      bytes: bytes ?? this.bytes,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (bytes.present) {
+      map['bytes'] = Variable<Uint8List>(bytes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<int>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PhotosCompanion(')
+          ..write('id: $id, ')
+          ..write('bytes: $bytes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -6193,6 +7256,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $StreakDaysTable streakDays = $StreakDaysTable(this);
+  late final $GearItemsTable gearItems = $GearItemsTable(this);
+  late final $PhotosTable photos = $PhotosTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -6212,6 +7277,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     balanceAnchors,
     keywordMappings,
     streakDays,
+    gearItems,
+    photos,
   ];
 }
 
@@ -10952,6 +12019,557 @@ typedef $$StreakDaysTableProcessedTableManager =
       StreakDayRow,
       PrefetchHooks Function()
     >;
+typedef $$GearItemsTableCreateCompanionBuilder = GearItemsCompanion Function({
+  required String id,
+  required String kind,
+  required String name,
+  Value<String> variant,
+  Value<String> specs,
+  Value<String?> imageAsset,
+  Value<String?> photoId,
+  Value<String?> purchaseDate,
+  Value<int?> pricePaise,
+  Value<String> seller,
+  Value<String?> warrantyEnd,
+  Value<String> notes,
+  Value<String?> billPhotoId,
+  Value<int> sortOrder,
+  Value<int> rowid,
+});
+typedef $$GearItemsTableUpdateCompanionBuilder = GearItemsCompanion Function({
+  Value<String> id,
+  Value<String> kind,
+  Value<String> name,
+  Value<String> variant,
+  Value<String> specs,
+  Value<String?> imageAsset,
+  Value<String?> photoId,
+  Value<String?> purchaseDate,
+  Value<int?> pricePaise,
+  Value<String> seller,
+  Value<String?> warrantyEnd,
+  Value<String> notes,
+  Value<String?> billPhotoId,
+  Value<int> sortOrder,
+  Value<int> rowid,
+});
+
+class $$GearItemsTableFilterComposer
+    extends Composer<_$AppDatabase, $GearItemsTable> {
+  $$GearItemsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get variant => $composableBuilder(
+    column: $table.variant,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get specs => $composableBuilder(
+    column: $table.specs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get imageAsset => $composableBuilder(
+    column: $table.imageAsset,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get photoId => $composableBuilder(
+    column: $table.photoId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get purchaseDate => $composableBuilder(
+    column: $table.purchaseDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pricePaise => $composableBuilder(
+    column: $table.pricePaise,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get seller => $composableBuilder(
+    column: $table.seller,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get warrantyEnd => $composableBuilder(
+    column: $table.warrantyEnd,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get billPhotoId => $composableBuilder(
+    column: $table.billPhotoId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$GearItemsTableOrderingComposer
+    extends Composer<_$AppDatabase, $GearItemsTable> {
+  $$GearItemsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get variant => $composableBuilder(
+    column: $table.variant,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get specs => $composableBuilder(
+    column: $table.specs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get imageAsset => $composableBuilder(
+    column: $table.imageAsset,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get photoId => $composableBuilder(
+    column: $table.photoId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get purchaseDate => $composableBuilder(
+    column: $table.purchaseDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pricePaise => $composableBuilder(
+    column: $table.pricePaise,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get seller => $composableBuilder(
+    column: $table.seller,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get warrantyEnd => $composableBuilder(
+    column: $table.warrantyEnd,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get billPhotoId => $composableBuilder(
+    column: $table.billPhotoId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$GearItemsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $GearItemsTable> {
+  $$GearItemsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get variant =>
+      $composableBuilder(column: $table.variant, builder: (column) => column);
+
+  GeneratedColumn<String> get specs =>
+      $composableBuilder(column: $table.specs, builder: (column) => column);
+
+  GeneratedColumn<String> get imageAsset => $composableBuilder(
+    column: $table.imageAsset,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get photoId =>
+      $composableBuilder(column: $table.photoId, builder: (column) => column);
+
+  GeneratedColumn<String> get purchaseDate => $composableBuilder(
+    column: $table.purchaseDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get pricePaise => $composableBuilder(
+    column: $table.pricePaise,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get seller =>
+      $composableBuilder(column: $table.seller, builder: (column) => column);
+
+  GeneratedColumn<String> get warrantyEnd => $composableBuilder(
+    column: $table.warrantyEnd,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get billPhotoId => $composableBuilder(
+    column: $table.billPhotoId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+}
+
+class $$GearItemsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $GearItemsTable,
+          GearItemRow,
+          $$GearItemsTableFilterComposer,
+          $$GearItemsTableOrderingComposer,
+          $$GearItemsTableAnnotationComposer,
+          $$GearItemsTableCreateCompanionBuilder,
+          $$GearItemsTableUpdateCompanionBuilder,
+          (
+            GearItemRow,
+            BaseReferences<_$AppDatabase, $GearItemsTable, GearItemRow>,
+          ),
+          GearItemRow,
+          PrefetchHooks Function()
+        > {
+  $$GearItemsTableTableManager(_$AppDatabase db, $GearItemsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$GearItemsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$GearItemsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$GearItemsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> variant = const Value.absent(),
+                Value<String> specs = const Value.absent(),
+                Value<String?> imageAsset = const Value.absent(),
+                Value<String?> photoId = const Value.absent(),
+                Value<String?> purchaseDate = const Value.absent(),
+                Value<int?> pricePaise = const Value.absent(),
+                Value<String> seller = const Value.absent(),
+                Value<String?> warrantyEnd = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<String?> billPhotoId = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => GearItemsCompanion(
+                id: id,
+                kind: kind,
+                name: name,
+                variant: variant,
+                specs: specs,
+                imageAsset: imageAsset,
+                photoId: photoId,
+                purchaseDate: purchaseDate,
+                pricePaise: pricePaise,
+                seller: seller,
+                warrantyEnd: warrantyEnd,
+                notes: notes,
+                billPhotoId: billPhotoId,
+                sortOrder: sortOrder,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String kind,
+                required String name,
+                Value<String> variant = const Value.absent(),
+                Value<String> specs = const Value.absent(),
+                Value<String?> imageAsset = const Value.absent(),
+                Value<String?> photoId = const Value.absent(),
+                Value<String?> purchaseDate = const Value.absent(),
+                Value<int?> pricePaise = const Value.absent(),
+                Value<String> seller = const Value.absent(),
+                Value<String?> warrantyEnd = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<String?> billPhotoId = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => GearItemsCompanion.insert(
+                id: id,
+                kind: kind,
+                name: name,
+                variant: variant,
+                specs: specs,
+                imageAsset: imageAsset,
+                photoId: photoId,
+                purchaseDate: purchaseDate,
+                pricePaise: pricePaise,
+                seller: seller,
+                warrantyEnd: warrantyEnd,
+                notes: notes,
+                billPhotoId: billPhotoId,
+                sortOrder: sortOrder,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$GearItemsTable, GearItemRow>(table),
+                  BaseReferences<_$AppDatabase, $GearItemsTable, GearItemRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$GearItemsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $GearItemsTable,
+      GearItemRow,
+      $$GearItemsTableFilterComposer,
+      $$GearItemsTableOrderingComposer,
+      $$GearItemsTableAnnotationComposer,
+      $$GearItemsTableCreateCompanionBuilder,
+      $$GearItemsTableUpdateCompanionBuilder,
+      (
+        GearItemRow,
+        BaseReferences<_$AppDatabase, $GearItemsTable, GearItemRow>,
+      ),
+      GearItemRow,
+      PrefetchHooks Function()
+    >;
+typedef $$PhotosTableCreateCompanionBuilder = PhotosCompanion Function({
+  required String id,
+  required Uint8List bytes,
+  required int createdAt,
+  Value<int> rowid,
+});
+typedef $$PhotosTableUpdateCompanionBuilder = PhotosCompanion Function({
+  Value<String> id,
+  Value<Uint8List> bytes,
+  Value<int> createdAt,
+  Value<int> rowid,
+});
+
+class $$PhotosTableFilterComposer
+    extends Composer<_$AppDatabase, $PhotosTable> {
+  $$PhotosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<Uint8List> get bytes => $composableBuilder(
+    column: $table.bytes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PhotosTableOrderingComposer
+    extends Composer<_$AppDatabase, $PhotosTable> {
+  $$PhotosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<Uint8List> get bytes => $composableBuilder(
+    column: $table.bytes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PhotosTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PhotosTable> {
+  $$PhotosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<Uint8List> get bytes =>
+      $composableBuilder(column: $table.bytes, builder: (column) => column);
+
+  GeneratedColumn<int> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$PhotosTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PhotosTable,
+          PhotoRow,
+          $$PhotosTableFilterComposer,
+          $$PhotosTableOrderingComposer,
+          $$PhotosTableAnnotationComposer,
+          $$PhotosTableCreateCompanionBuilder,
+          $$PhotosTableUpdateCompanionBuilder,
+          (PhotoRow, BaseReferences<_$AppDatabase, $PhotosTable, PhotoRow>),
+          PhotoRow,
+          PrefetchHooks Function()
+        > {
+  $$PhotosTableTableManager(_$AppDatabase db, $PhotosTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PhotosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PhotosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PhotosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<Uint8List> bytes = const Value.absent(),
+                Value<int> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PhotosCompanion(
+                id: id,
+                bytes: bytes,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required Uint8List bytes,
+                required int createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => PhotosCompanion.insert(
+                id: id,
+                bytes: bytes,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PhotosTable, PhotoRow>(table),
+                  BaseReferences<_$AppDatabase, $PhotosTable, PhotoRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PhotosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PhotosTable,
+      PhotoRow,
+      $$PhotosTableFilterComposer,
+      $$PhotosTableOrderingComposer,
+      $$PhotosTableAnnotationComposer,
+      $$PhotosTableCreateCompanionBuilder,
+      $$PhotosTableUpdateCompanionBuilder,
+      (PhotoRow, BaseReferences<_$AppDatabase, $PhotosTable, PhotoRow>),
+      PhotoRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -10984,4 +12602,8 @@ class $AppDatabaseManager {
       $$KeywordMappingsTableTableManager(_db, _db.keywordMappings);
   $$StreakDaysTableTableManager get streakDays =>
       $$StreakDaysTableTableManager(_db, _db.streakDays);
+  $$GearItemsTableTableManager get gearItems =>
+      $$GearItemsTableTableManager(_db, _db.gearItems);
+  $$PhotosTableTableManager get photos =>
+      $$PhotosTableTableManager(_db, _db.photos);
 }

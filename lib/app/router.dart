@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/backup/backup_screen.dart';
 import '../features/balance/balance_check_screen.dart';
 import '../features/budget_values/budget_values_screen.dart';
 import '../features/category/category_screen.dart';
@@ -11,6 +12,8 @@ import '../features/home/home_screen.dart';
 import '../features/lock/lock_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/plan/plan_screen.dart';
+import '../features/profile/gear_screen.dart';
+import '../features/profile/profile_screen.dart';
 import '../features/report/report_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/supplies/supplies_screen.dart';
@@ -53,6 +56,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
       GoRoute(path: '/transactions', builder: (context, state) => const TransactionsScreen()),
       GoRoute(path: '/balance-check', builder: (context, state) => const BalanceCheckScreen()),
+      GoRoute(path: '/backup', builder: (context, state) => const BackupScreen()),
+      GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
+      GoRoute(path: '/gear/:id', builder: (context, state) => GearScreen(id: state.pathParameters['id']!)),
       GoRoute(path: '/budget-values', builder: (context, state) => const BudgetValuesScreen()),
       GoRoute(
         path: '/supplies',

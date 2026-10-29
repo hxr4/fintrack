@@ -1,6 +1,11 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:budget_engine/budget_engine.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
 
+import '../data/backup.dart';
 import '../data/budget_repository.dart';
 import '../data/ledger_actions.dart';
 import '../data/database.dart';
@@ -10,6 +15,7 @@ import '../domain/cycle_planning.dart';
 import '../domain/ledger_data.dart';
 import '../domain/preferences.dart';
 import '../platform/authenticator.dart';
+import '../platform/file_bridge.dart';
 import '../platform/secure_window.dart';
 
 typedef Clock = DateTime Function();
@@ -23,6 +29,12 @@ final clockProvider = Provider<Clock>((ref) => DateTime.now);
 final authenticatorProvider = Provider<Authenticator>((ref) => DeviceAuthenticator());
 
 final secureWindowProvider = Provider<SecureWindow>((ref) => AndroidSecureWindow());
+
+final fileBridgeProvider = Provider<FileBridge>((ref) => AndroidFileBridge());
+
+final scratchDirectoryProvider = Provider<Future<Directory>>((ref) => getTemporaryDirectory());
+
+final backupIterationsProvider = Provider<int>((ref) => BackupCodec.defaultIterations);
 
 final class AppState {
   AppState({required this.preferences, required this.settings, required this.ledger, required this.now});
@@ -90,6 +102,28 @@ class BudgetController extends AsyncNotifier<AppState> {
 
   Future<void> completeOnboarding(OnboardingInput input) async {
     await _repository.completeOnboarding(input: input, now: _now(), preferences: _current.preferences);
+    ref.invalidateSelf();
+    await future;
+  }
+
+  Future<BackupService> _backupService() async =>
+      BackupService(ref.read(databaseProvider), scratch: await ref.read(scratchDirectoryProvider));
+
+  Future<Uint8List> createBackup(String passphrase) async {
+    final now = _now();
+    final bytes = await (await _backupService()).create(
+      passphrase: passphrase,
+      now: now,
+      iterations: ref.read(backupIterationsProvider),
+    );
+    final preferences = _current.preferences.copyWith(lastBackupAt: now);
+    await _repository.savePreferences(preferences);
+    state = AsyncData(_current.copyWith(preferences: preferences));
+    return bytes;
+  }
+
+  Future<void> restoreBackup(Uint8List bytes, String passphrase) async {
+    await (await _backupService()).restore(bytes: bytes, passphrase: passphrase);
     ref.invalidateSelf();
     await future;
   }
@@ -238,9 +272,12 @@ class LockController extends Notifier<bool> {
   static const backgroundLimit = Duration(seconds: 30);
 
   DateTime? _backgroundedAt;
+  var _expectingExternal = false;
 
   @override
   bool build() => true;
+
+  void expectExternal() => _expectingExternal = true;
 
   void lock() => state = true;
 
@@ -254,6 +291,10 @@ class LockController extends Notifier<bool> {
   void onForeground(DateTime at) {
     final since = _backgroundedAt;
     _backgroundedAt = null;
+    if (_expectingExternal) {
+      _expectingExternal = false;
+      return;
+    }
     if (since != null && at.difference(since) >= backgroundLimit) {
       state = true;
     }

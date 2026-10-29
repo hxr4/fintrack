@@ -2,6 +2,7 @@ enum ThemePreference { dark, light }
 
 abstract final class SettingKeys {
   static const onboarded = 'onboarded';
+  static const lastBackupAt = 'lastBackupAt';
   static const cardEnabled = 'cardEnabled';
   static const secureScreen = 'secureScreen';
   static const theme = 'theme';
@@ -27,6 +28,7 @@ final class AppPreferences {
     this.cardEnabled = false,
     this.secureScreen = true,
     this.theme = ThemePreference.dark,
+    this.lastBackupAt,
   });
 
   factory AppPreferences.fromMap(Map<String, String> map) => AppPreferences(
@@ -34,25 +36,35 @@ final class AppPreferences {
         cardEnabled: map[SettingKeys.cardEnabled] == 'true',
         secureScreen: map[SettingKeys.secureScreen] != 'false',
         theme: map[SettingKeys.theme] == ThemePreference.light.name ? ThemePreference.light : ThemePreference.dark,
+        lastBackupAt: DateTime.tryParse(map[SettingKeys.lastBackupAt] ?? ''),
       );
 
   final bool onboarded;
   final bool cardEnabled;
   final bool secureScreen;
   final ThemePreference theme;
+  final DateTime? lastBackupAt;
 
   Map<String, String> toMap() => {
         SettingKeys.onboarded: '$onboarded',
         SettingKeys.cardEnabled: '$cardEnabled',
         SettingKeys.secureScreen: '$secureScreen',
         SettingKeys.theme: theme.name,
+        SettingKeys.lastBackupAt: lastBackupAt?.toUtc().toIso8601String() ?? '',
       };
 
-  AppPreferences copyWith({bool? onboarded, bool? cardEnabled, bool? secureScreen, ThemePreference? theme}) =>
+  AppPreferences copyWith({
+    bool? onboarded,
+    bool? cardEnabled,
+    bool? secureScreen,
+    ThemePreference? theme,
+    DateTime? lastBackupAt,
+  }) =>
       AppPreferences(
         onboarded: onboarded ?? this.onboarded,
         cardEnabled: cardEnabled ?? this.cardEnabled,
         secureScreen: secureScreen ?? this.secureScreen,
         theme: theme ?? this.theme,
+        lastBackupAt: lastBackupAt ?? this.lastBackupAt,
       );
 }

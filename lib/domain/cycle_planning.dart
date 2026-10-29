@@ -31,6 +31,7 @@ final class OnboardingInput {
     required this.bank,
     required this.cash,
     required this.excluded,
+    this.leftover = Money.zero,
     required this.recurring,
     required this.supplies,
     required this.cardEnabled,
@@ -46,9 +47,21 @@ final class OnboardingInput {
   final Money bank;
   final Money cash;
   final Money excluded;
+  final Money leftover;
   final List<RecurringDraft> recurring;
   final List<SupplyDraft> supplies;
   final bool cardEnabled;
+
+  Money get balancesGap => balancesGapFor(deposit: deposit, leftover: leftover, bank: bank, cash: cash, excluded: excluded);
+
+  static Money balancesGapFor({
+    required Money deposit,
+    required Money leftover,
+    required Money bank,
+    required Money cash,
+    required Money excluded,
+  }) =>
+      bank + cash - excluded - deposit - leftover;
 
   BudgetSettings toSettings({int dayBoundaryHour = 4}) => BudgetSettings(
         foodFloorPerDay: foodFloorPerDay,

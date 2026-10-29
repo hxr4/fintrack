@@ -1,5 +1,7 @@
 import 'package:budget_engine/budget_engine.dart';
 import 'package:fintrack/app/state.dart';
+import 'package:fintrack/data/budget_repository.dart';
+import 'package:fintrack/domain/budget_snapshot.dart';
 import 'package:fintrack/domain/category_prediction.dart';
 import 'package:fintrack/domain/health.dart';
 import 'package:fintrack/domain/log_parser.dart';
@@ -126,5 +128,46 @@ void main() {
       lock.onForeground(start.add(const Duration(seconds: 30)));
       expect(container.read(lockProvider), isTrue);
     });
+  });
+
+  group('allowance day boundary in the home snapshot', () {
+    Future<BudgetSnapshot> snapshotAt(DateTime spendAt, DateTime now) async {
+      final db = memoryDatabase();
+      addTearDown(db.close);
+      final clock = FakeClock(ist(2026, 3, 5, 10));
+      await seed(db, clock);
+      final repository = BudgetRepository(db);
+      final ledger = (await repository.loadLedger())!;
+      await repository.insertTransaction(
+        ledger.cycle.id,
+        TransactionDraft(
+          amount: Money.rupees(100),
+          category: BudgetCategory.food,
+          method: PaymentMethod.cash,
+          occurredAt: spendAt,
+          source: TransactionSource.manual,
+        ),
+      );
+      final settings = (await repository.loadBudgetSettings())!;
+      return BudgetSnapshot.compute(ledger: (await repository.loadLedger())!, settings: settings, now: now);
+    }
+
+    for (final (label, spendAt, countsForEvening) in [
+      ('23:59', ist(2026, 3, 9, 23, 59), true),
+      ('00:00', ist(2026, 3, 10, 0), true),
+      ('03:59', ist(2026, 3, 10, 3, 59), true),
+      ('04:00', ist(2026, 3, 10, 4), false),
+    ]) {
+      test('a spend at $label belongs to ${countsForEvening ? 'the previous' : 'the new'} allowance day', () async {
+        final evening = await snapshotAt(spendAt, ist(2026, 3, 10, 3, 59, 59));
+        final morning = await snapshotAt(spendAt, ist(2026, 3, 10, 4));
+        expect(evening.today, CivilDate(2026, 3, 9));
+        expect(morning.today, CivilDate(2026, 3, 10));
+        expect(evening.isLateNight, isTrue);
+        expect(morning.isLateNight, isFalse);
+        expect(evening.allowance.spentToday, countsForEvening ? Money.rupees(100) : Money.zero);
+        expect(morning.allowance.spentToday, countsForEvening ? Money.zero : Money.rupees(100));
+      });
+    }
   });
 }

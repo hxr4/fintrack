@@ -8,6 +8,7 @@ import '../../app/theme.dart';
 import '../../domain/rupees.dart';
 import '../common/forms.dart';
 import '../common/widgets.dart';
+import '../plan/plan_screen.dart';
 
 class BalanceCheckScreen extends ConsumerStatefulWidget {
   const BalanceCheckScreen({super.key});
@@ -79,6 +80,34 @@ class _BalanceCheckScreenState extends ConsumerState<BalanceCheckScreen> {
     navigator.pop();
   }
 
+  bool _looksLikeDeposit(BalanceComparison comparison) {
+    if (!comparison.difference.isPositive) {
+      return false;
+    }
+    final deposits = ref.read(budgetProvider).requireValue.ledger!.deposits.where((deposit) => deposit.isInstallment);
+    if (deposits.isEmpty) {
+      return false;
+    }
+    final last = deposits.last.amount;
+    return (comparison.difference - last).paise.abs() * 5 <= last.paise;
+  }
+
+  Future<void> _openDeposit() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      useSafeArea: true,
+      builder: (_) => const DepositSheet(),
+    );
+    if (mounted) {
+      setState(() {
+        _comparison = null;
+        _reported = null;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
@@ -93,6 +122,8 @@ class _BalanceCheckScreenState extends ConsumerState<BalanceCheckScreen> {
           padding: const EdgeInsets.all(16),
           children: [
             Text(S.balanceCheckIntro, style: textTheme.bodyMedium?.copyWith(color: palette.mutedText)),
+            const SizedBox(height: 6),
+            Text(S.balanceCheckHelp, key: const Key('check-help'), style: textTheme.bodySmall?.copyWith(color: palette.mutedText)),
             if (anchor != null) ...[
               const SizedBox(height: 4),
               Text(S.lastChecked(formatDate(KolkataTime.dateOf(anchor.at))), style: textTheme.bodySmall?.copyWith(color: palette.mutedText)),
@@ -139,6 +170,30 @@ class _BalanceCheckScreenState extends ConsumerState<BalanceCheckScreen> {
                   ],
                 ),
               ),
+              if (_looksLikeDeposit(comparison)) ...[
+                const SizedBox(height: 8),
+                SectionCard(
+                  key: const Key('deposit-lookalike'),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(S.depositLookalikeTitle, style: textTheme.titleSmall),
+                      const SizedBox(height: 4),
+                      Text(
+                        S.depositLookalikeBody(Rupees.format(comparison.difference)),
+                        style: textTheme.bodySmall?.copyWith(color: palette.mutedText),
+                      ),
+                      const SizedBox(height: 8),
+                      FilledButton.icon(
+                        key: const Key('lookalike-money-arrived'),
+                        onPressed: _openDeposit,
+                        icon: const Icon(Icons.account_balance_wallet_outlined),
+                        label: const Text(S.moneyArrived),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               if (!comparison.matches) ...[
                 const SizedBox(height: 8),
                 RadioGroup<BalanceResolution>(

@@ -4,6 +4,7 @@ import 'package:fintrack/data/budget_repository.dart';
 import 'package:fintrack/data/demo_seeder.dart';
 import 'package:fintrack/domain/cycle_planning.dart';
 import 'package:fintrack/domain/ledger_data.dart';
+import 'package:fintrack/domain/preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -257,6 +258,73 @@ void main() {
       expect(state.ledger!.cycle.weights[BudgetCategory.food], 6000);
       final reloaded = await BudgetRepository(container.read(databaseProvider)).loadBudgetSettings();
       expect(reloaded!.defaultWeights[BudgetCategory.food], 6200);
+    });
+  });
+
+  group('first balance check right after onboarding (F42)', () {
+    for (final hour in [9, 15]) {
+      for (final leftover in [0, 2000]) {
+        test('onboarding at $hour:00 with ₹$leftover already in hand agrees with the first check', () async {
+          final db = memoryDatabase();
+          clock = FakeClock(ist(2026, 3, 10, hour));
+          await BudgetRepository(db).completeOnboarding(
+            input: standardInput(CivilDate(2026, 3, 10), leftover: leftover),
+            now: clock.now,
+            preferences: const AppPreferences(),
+          );
+          final container = await startContainer(db, clock);
+          addTearDown(() async {
+            container.dispose();
+            await db.close();
+          });
+          final ledger = read(container).ledger!;
+          final total = Money.rupees(12000 + leftover);
+          expect(ledger.cycle.carryIn, Money.rupees(leftover));
+          expect(Ledger.total(ledger.balances), total);
+          expect(ledger.latestAnchor!.anchor.total, total);
+
+          clock.now = clock.now.add(const Duration(minutes: 5));
+          final first = await controller(container).previewBalance(
+            ReportedBalance(at: clock.now, bank: total, cash: Money.zero),
+          );
+          expect(first!.matches, isTrue);
+
+          clock.now = clock.now.add(const Duration(hours: 2));
+          await controller(container).log(
+            amount: Money.rupees(150),
+            category: BudgetCategory.food,
+            method: PaymentMethod.cash,
+            source: TransactionSource.manual,
+          );
+          final afterSpend = await controller(container).previewBalance(
+            ReportedBalance(at: clock.now, bank: total - Money.rupees(150), cash: Money.zero),
+          );
+          expect(afterSpend!.matches, isTrue);
+          expect(Ledger.total(read(container).ledger!.balances), total - Money.rupees(150));
+        });
+      }
+    }
+
+    test('onboarding numbers that do not add up are reported as a gap', () {
+      final input = standardInput(CivilDate(2026, 3, 10), leftover: 500);
+      expect(input.balancesGap, Money.zero);
+      final mismatched = OnboardingInput(
+        deposit: input.deposit,
+        depositDate: input.depositDate,
+        anchorDay: input.anchorDay,
+        foodFloorPerDay: input.foodFloorPerDay,
+        petrolFloorPerCycle: input.petrolFloorPerCycle,
+        nightFoodStock: input.nightFoodStock,
+        weights: input.weights,
+        bank: Money.rupees(11000),
+        cash: Money.zero,
+        excluded: Money.zero,
+        leftover: Money.zero,
+        recurring: const [],
+        supplies: const [],
+        cardEnabled: false,
+      );
+      expect(mismatched.balancesGap, Money.rupees(-1000));
     });
   });
 

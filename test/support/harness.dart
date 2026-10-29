@@ -1,13 +1,18 @@
+import 'dart:io';
+
 import 'package:budget_engine/budget_engine.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:fintrack/app/app.dart';
+import 'package:fintrack/app/profile_state.dart';
 import 'package:fintrack/app/state.dart';
 import 'package:fintrack/data/budget_repository.dart';
 import 'package:fintrack/data/database.dart';
 import 'package:fintrack/domain/cycle_planning.dart';
 import 'package:fintrack/domain/preferences.dart';
 import 'package:fintrack/platform/authenticator.dart';
+import 'package:fintrack/platform/file_bridge.dart';
+import 'package:fintrack/platform/photo_picker.dart';
 import 'package:fintrack/platform/secure_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -34,6 +39,33 @@ final class FakeAuthenticator implements Authenticator {
   }
 }
 
+final class FakeFileBridge implements FileBridge {
+  final saved = <String, Uint8List>{};
+  Uint8List? toPick;
+  var shared = 0;
+
+  @override
+  Future<Uint8List?> pickFile() async => toPick;
+
+  @override
+  Future<String?> saveToDownloads(String name, Uint8List bytes) async {
+    saved[name] = bytes;
+    return 'Download/$name';
+  }
+
+  @override
+  Future<void> share(String name, Uint8List bytes) async => shared += 1;
+}
+
+final class FakePhotoPicker implements PhotoPicker {
+  FakePhotoPicker([this.bytes]);
+
+  Uint8List? bytes;
+
+  @override
+  Future<Uint8List?> pick(PhotoSource source) async => bytes;
+}
+
 final class FakeSecureWindow implements SecureWindow {
   bool? secure;
 
@@ -41,8 +73,8 @@ final class FakeSecureWindow implements SecureWindow {
   Future<void> setSecure(bool secure) async => this.secure = secure;
 }
 
-DateTime ist(int year, int month, int day, int hour, [int minute = 0]) =>
-    KolkataTime.at(CivilDate(year, month, day), hour, minute);
+DateTime ist(int year, int month, int day, int hour, [int minute = 0, int second = 0]) =>
+    KolkataTime.at(CivilDate(year, month, day), hour, minute).add(Duration(seconds: second));
 
 AppDatabase memoryDatabase() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -55,6 +87,7 @@ OnboardingInput standardInput(
   int deposit = 12000,
   List<SupplyDraft> supplies = const [],
   List<RecurringDraft> recurring = const [],
+  int leftover = 0,
 }) =>
     OnboardingInput(
       deposit: Money.rupees(deposit),
@@ -71,9 +104,10 @@ OnboardingInput standardInput(
         BudgetCategory.misc: 3,
         BudgetCategory.buffer: 10,
       }),
-      bank: Money.rupees(12000),
+      bank: Money.rupees(deposit + leftover),
       cash: Money.zero,
       excluded: Money.zero,
+      leftover: Money.rupees(leftover),
       recurring: recurring,
       supplies: supplies,
       cardEnabled: cardEnabled,
@@ -97,6 +131,9 @@ Future<void> pumpApp(
   required AppDatabase db,
   required FakeClock clock,
   FakeAuthenticator? authenticator,
+  FakeFileBridge? files,
+  Directory? scratch,
+  FakePhotoPicker? photos,
 }) async {
   await tester.binding.setSurfaceSize(const Size(420, 1600));
   await tester.pumpWidget(ProviderScope(
@@ -105,6 +142,10 @@ Future<void> pumpApp(
       clockProvider.overrideWithValue(clock.call),
       authenticatorProvider.overrideWithValue(authenticator ?? FakeAuthenticator()),
       secureWindowProvider.overrideWithValue(FakeSecureWindow()),
+      fileBridgeProvider.overrideWithValue(files ?? FakeFileBridge()),
+      scratchDirectoryProvider.overrideWithValue(Future.value(scratch ?? Directory.systemTemp)),
+      backupIterationsProvider.overrideWithValue(1000),
+      photoPickerProvider.overrideWithValue(photos ?? FakePhotoPicker()),
     ],
     child: const FintrackApp(),
   ));
@@ -139,3 +180,19 @@ Future<ProviderContainer> startContainer(AppDatabase db, FakeClock clock) async 
   await container.read(budgetProvider.future);
   return container;
 }
+
+Future<void> settleReal(WidgetTester tester, bool Function() done, {int attempts = 100}) async {
+  for (var attempt = 0; attempt < attempts && !done(); attempt++) {
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  await settle(tester, frames: 10);
+}
+
+final tinyPng = Uint8List.fromList(const [
+  0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+  0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4,
+  0x89, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0xF8, 0xCF, 0xC0, 0xF0,
+  0x1F, 0x00, 0x05, 0x00, 0x01, 0xFF, 0x89, 0x99, 0x3D, 0x1D, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45,
+  0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+]);

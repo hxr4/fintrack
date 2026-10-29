@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../app/state.dart';
 import '../../app/strings.dart';
@@ -43,6 +44,14 @@ class SettingsScreen extends ConsumerWidget {
             onChanged: (value) => controller.updatePreferences(
               preferences.copyWith(theme: value ? ThemePreference.light : ThemePreference.dark),
             ),
+          ),
+          ListTile(
+            key: const Key('open-backup'),
+            leading: const Icon(Icons.backup_outlined),
+            title: const Text(S.backupTitle),
+            subtitle: const Text(S.backupHint),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/backup'),
           ),
           ListTile(
             leading: const Icon(Icons.lock_outline),

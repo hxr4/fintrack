@@ -31,4 +31,31 @@ void main() {
   test('start of an IST date is 18:30 UTC on the previous day', () {
     expect(KolkataTime.startOfDate(d('2026-03-05')), DateTime.utc(2026, 3, 4, 18, 30));
   });
+
+  group('allowance day boundary at 04:00', () {
+    final evening = d('2026-03-05');
+    final next = d('2026-03-06');
+    final cases = <(String, DateTime, CivilDate, bool)>[
+      ('23:59', KolkataTime.at(evening, 23, 59), evening, false),
+      ('00:00', KolkataTime.at(next, 0), evening, true),
+      ('03:59', KolkataTime.at(next, 3, 59), evening, true),
+      ('04:00', KolkataTime.at(next, 4), next, false),
+    ];
+    for (final (label, instant, allowanceDay, lateNight) in cases) {
+      test(label, () {
+        expect(KolkataTime.allowanceDateOf(instant, boundaryHour: 4), allowanceDay);
+        expect(KolkataTime.isLateNight(instant, boundaryHour: 4), lateNight);
+      });
+    }
+
+    test('03:59:59.999 is still the previous allowance day', () {
+      final instant = KolkataTime.at(next, 4).subtract(const Duration(milliseconds: 1));
+      expect(KolkataTime.allowanceDateOf(instant, boundaryHour: 4), evening);
+    });
+
+    test('the boundary also holds across a month and year end', () {
+      expect(KolkataTime.allowanceDateOf(KolkataTime.at(d('2027-01-01'), 3, 59), boundaryHour: 4), d('2026-12-31'));
+      expect(KolkataTime.allowanceDateOf(KolkataTime.at(d('2028-03-01'), 0), boundaryHour: 4), d('2028-02-29'));
+    });
+  });
 }

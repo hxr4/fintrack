@@ -40,6 +40,28 @@ void main() {
     await db.close();
   });
 
+  testWidgets('a surplus close to the monthly money suggests logging the deposit first (F41)', (tester) async {
+    final db = memoryDatabase();
+    final clock = FakeClock(ist(2026, 3, 10, 14));
+    await seed(db, clock);
+    clock.now = ist(2026, 4, 5, 10);
+    await pumpApp(tester, db: db, clock: clock);
+    await openPlanTool(tester, 'tool-balance-check');
+    expect(find.byKey(const Key('check-help')), findsOneWidget);
+    await tester.enterText(find.byKey(const Key('check-bank')), '24500');
+    await tester.tap(find.byKey(const Key('check-compare')));
+    await settle(tester);
+    expect(find.text("This looks like this month's money. Log it first?"), findsOneWidget);
+    expect(find.byKey(const Key('resolve-unlogged')), findsOneWidget);
+
+    await tester.enterText(find.byKey(const Key('check-bank')), '12500');
+    await tester.tap(find.byKey(const Key('check-compare')));
+    await settle(tester);
+    expect(find.byKey(const Key('deposit-lookalike')), findsNothing);
+    await unmount(tester);
+    await db.close();
+  });
+
   testWidgets('restocking a supply from the Supplies tab', (tester) async {
     final db = memoryDatabase();
     final clock = FakeClock(ist(2026, 3, 10, 14));

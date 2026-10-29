@@ -184,6 +184,10 @@ abstract final class S {
   static const cashInHand = 'Cash in hand';
   static const excludedAmount = 'Money in the account that is not for this budget';
   static const excludedHint = 'For example rent or savings. Leave 0 if none.';
+  static const leftoverLabel = 'Money already in hand';
+  static const leftoverHint = 'Money you had before this deposit. It joins this month\'s plan.';
+  static String balancesGapMessage(String total, String parts) =>
+      'Bank plus cash, minus money not for this budget, comes to $total. This month\'s money plus money already in hand comes to $parts. They need to match.';
   static const recurringTitle = 'Recurring costs';
   static const recurringBody = 'Anything that repeats, like a subscription. Skip if none.';
   static const addRecurring = 'Add recurring cost';
@@ -322,6 +326,11 @@ abstract final class S {
   static const balanceCheckTitle = 'Balance check';
   static const balanceCheckIntro =
       'Enter what is in your bank account and in your pocket right now. The app compares it with what it expects from your entries.';
+  static const balanceCheckHelp =
+      'The amount compared is bank plus cash, minus money in the account that is not for this budget, such as rent. If this month\'s money has just arrived, log it from Money arrived first.';
+  static const depositLookalikeTitle = 'This looks like this month\'s money. Log it first?';
+  static String depositLookalikeBody(String amount) =>
+      'The extra $amount is close to your usual monthly money. If it has arrived, log it as Monthly money and then compare again.';
   static const compare = 'Compare';
   static const expected = 'Expected';
   static const actual = 'Actual';
@@ -348,4 +357,67 @@ abstract final class S {
 
   static const demoData = 'Load three demo months';
   static const demoDataHint = 'Debug builds only. Fills this empty install with simulated data.';
+
+  static const backupTitle = 'Backup and restore';
+  static const backupHint = 'Encrypted backup file, saved to Downloads';
+  static const backupNotice =
+      'Everything in Fintrack lives only on this phone. Uninstalling the app or resetting the phone erases it. Keep a recent backup somewhere other than this phone.';
+  static String lastBackup(String when) => 'Last backup: $when';
+  static const neverBackedUp = 'No backup yet';
+  static const createBackup = 'Create backup';
+  static const restoreBackup = 'Restore from a backup';
+  static const passphrase = 'Passphrase';
+  static const confirmPassphrase = 'Type the passphrase again';
+  static const passphraseHint =
+      'At least 8 characters. Without it the backup cannot be opened, so keep it in a password manager.';
+  static const passphraseTooShort = 'Use at least 8 characters';
+  static const passphraseMismatch = 'The two passphrases differ';
+  static const creatingBackup = 'Creating backup';
+  static const restoringBackup = 'Restoring';
+  static String savedTo(String location) => 'Saved to $location';
+  static const share = 'Share';
+  static const notSaved = 'The backup was created but not saved. Use Share to keep it.';
+  static String restoreConfirm(String date) =>
+      'This replaces everything in Fintrack with the backup from $date. Anything logged since then is lost.';
+  static const restore = 'Restore';
+  static const restored = 'Backup restored';
+  static const backupNotABackup = 'That file is not a Fintrack backup.';
+  static const backupWrongPassphrase = 'The passphrase is wrong, or the file has been changed.';
+  static const backupNewer = 'That backup was made by a newer version of Fintrack. Update the app first.';
+  static const backupDamaged = 'That backup file is damaged.';
+  static const restoreOnboardingHint = 'Already used Fintrack? Restore a backup instead of setting up again.';
+
+  static const profile = 'Profile';
+  static const yourName = 'Your name';
+  static const aboutYou = 'About you';
+  static const aboutYouHint = 'Course, college, city, anything you like';
+  static const editProfile = 'Edit profile';
+  static const changePhoto = 'Change photo';
+  static const takePhoto = 'Take a photo';
+  static const chooseFromGallery = 'Choose from gallery';
+  static const gear = 'Gear';
+  static const addGear = 'Add gear';
+  static const gearName = 'Name';
+  static const gearVariant = 'Variant, colour or configuration';
+  static const specs = 'Specs';
+  static const purchaseDate = 'Purchase date';
+  static const pricePaid = 'Price paid';
+  static const seller = 'Seller';
+  static const warrantyEnds = 'Warranty ends';
+  static const notes = 'Notes';
+  static const billPhoto = 'Bill photo';
+  static const addBillPhoto = 'Add bill photo';
+  static const useMyPhoto = 'Use my own photo';
+  static const deleteGear = 'Remove this item';
+  static const gearSaved = 'Saved';
+  static String costPerDay(String amount) => '$amount per day so far';
+  static String ownedFor(int days) => days == 1 ? 'Owned for 1 day' : 'Owned for $days days';
+  static String warrantyLeft(int days) =>
+      days < 0 ? 'Warranty ended' : (days == 0 ? 'Warranty ends today' : 'Warranty: $days days left');
+  static const missingDetails = 'Add the purchase date and price to see cost per day.';
+  static const odometerLabel = 'Odometer';
+  static String odometerValue(int km) => '$km km';
+  static const bikeDetails = 'Service, fuel and documents';
+  static const openBike = 'Open bike log';
+  static const photoPlaceholder = 'No photo yet';
 }

@@ -10,6 +10,7 @@ import '../../domain/budget_snapshot.dart';
 import '../../domain/rupees.dart';
 import '../add/add_sheet.dart';
 import '../common/widgets.dart';
+import '../profile/profile_screen.dart';
 import 'allowance_ring.dart';
 import 'category_card.dart';
 import 'quick_log.dart';
@@ -181,9 +182,10 @@ class _Header extends ConsumerWidget {
           ),
         ),
         IconButton(
-          tooltip: S.settings,
-          icon: const Icon(Icons.settings_outlined),
-          onPressed: () => context.push('/settings'),
+          key: const Key('open-profile'),
+          tooltip: S.profile,
+          icon: const ProfileAvatar(radius: 14),
+          onPressed: () => context.push('/profile'),
         ),
         IconButton(
           key: const Key('lock-button'),
